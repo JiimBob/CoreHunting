@@ -39,7 +39,8 @@ async def on_message(message):
     ret = analyzer.analyze_call(message.content)
 
     # and send it
-    await client.send_message(channel, ret)
+    if ret is not None:
+        await client.send_message(channel, ret)
 
 
 async def start_thread():
@@ -47,7 +48,7 @@ async def start_thread():
     newMessage = True
     mainMessage = None
     server = [server for server in client.servers if server.name == "Core Hunting"][0]
-    channel = [channel for channel in server.channels if channel.name == "bot"][0]
+    channel = [channel for channel in server.channels if channel.name == "bottom-secret"][0]
 
 
 async def send_message(message):
