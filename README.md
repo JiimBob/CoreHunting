@@ -1,2 +1,2 @@
 # CoreHunting
-Discord bot to help divination core hunting
+Discord bot to help out core hunting
