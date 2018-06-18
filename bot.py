@@ -1,8 +1,8 @@
-import asyncio
 import json
 import os
-
 import discord
+
+from discord import Game
 from analyzer import Analyzer
 
 client = discord.Client()
@@ -12,6 +12,7 @@ auth_file = 'auth.json'
 
 @client.event
 async def on_ready():
+    await client.change_presence(game=Game(name="Hall of Memories"))
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
