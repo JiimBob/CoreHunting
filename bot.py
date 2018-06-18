@@ -48,7 +48,7 @@ async def start_thread():
     global mainMessage, channel, newMessage
     newMessage = True
     mainMessage = None
-    server = [server for server in client.servers if server.name == "Core Hunting2"][0]
+    server = [server for server in client.servers if server.name == "Core Hunting"][0]
     channel = [channel for channel in server.channels if channel.name == "bottom-secret"][0]
 
 

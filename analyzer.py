@@ -101,8 +101,8 @@ class Analyzer:
         res = []
         for key, value in s:
             if value[0] == 0:
-                break
-            if isinstance(value[0], str):
+                continue
+            elif isinstance(value[0], str):
                 res.append("w{}({})".format(key, value[0]))
             elif isinstance(value[0], int):
                 res.append("w{}({}/6)".format(key, value[0]))
