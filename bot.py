@@ -39,8 +39,7 @@ async def on_message(message):
     ret = analyzer.analyze_call(message.content)
 
     # and send it
-    if ret is not None:
-        await client.send_message(channel, ret)
+    send_message(ret)
 
 
 async def start_thread():
@@ -53,7 +52,8 @@ async def start_thread():
 
 async def send_message(message):
     global channel
-    await client.send_message(channel, message)
+    if message:
+        await client.send_message(channel, message)
 
 if not os.path.exists(auth_file):
     print("no auth json found, please create one")
