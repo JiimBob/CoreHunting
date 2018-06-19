@@ -21,7 +21,7 @@ settings = Settings()
 
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
                 aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
-@commands.has_any_role('Staff', "wealths purple role")
+@commands.has_any_role(*settings.ranks)
 async def reset(ctx):
     channel = ctx.message.channel.name
     possible_replies = [
@@ -53,7 +53,7 @@ async def reset(ctx):
 
 
 @client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.')
-@commands.has_any_role('Staff', "wealths purple role")
+@commands.has_any_role(*settings.ranks)
 async def stop():
     print("Attempting to stop")
     await client.logout()
@@ -114,10 +114,6 @@ mainMessage = None
 async def on_message(message):
     print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
     # Check if we are in the right channel
-
-    if message.content == "!stop":
-        await client.logout()
-        sys.exit(0)
 
     if message.channel.name not in settings.channels:
         return
