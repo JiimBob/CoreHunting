@@ -1,6 +1,6 @@
 import json
 import os
-import discord
+import random
 from discord.ext.commands import Bot
 from discord.ext import commands
 
@@ -18,12 +18,30 @@ auth_file = 'auth.json'
 @commands.has_any_role('Staff')
 async def reset(ctx):
     channel = ctx.message.channel.name
+    possible_replies = [
+        'abolished',
+        'obliterated',
+        'annihilated',
+        'eliminated',
+        'removed',
+        'cleared',
+        'erased',
+        'emptied,'
+        'nulled',
+        'terminated',
+        'eradicated',
+        'negated',
+        'undone',
+        'wiped'
+        'destroyed'
+    ]
     if channel == 'calls' or channel == 'bottom-secret':
         my_list = list(analyzer.worlds.items())
         for key, value in my_list:
             value[0] = 0
             value[1] = 0
-        await client.say("World data has been obliterated.")
+        response = "World data has been {}.".format(random.choice(possible_replies))
+        await client.say(response)
     else:
         pass
 
