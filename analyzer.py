@@ -49,8 +49,8 @@ def compare(tup1, tup2):
     a, (b, c) = tup1
     x, (y, z) = tup2
     if isinstance(b, int) and isinstance(y, int):
-        return -1
-    if isinstance(b, str) and isinstance(y, int):
+        return -1 if b > y else 1
+    elif isinstance(b, str) and isinstance(y, int):
         return -1
     elif isinstance(b, int) and isinstance(y, str):
         return 1
@@ -98,6 +98,7 @@ class Analyzer:
     def get_order(self):
         my_list = list(self.worlds.items())
         s = sorted(my_list, key=cmp_to_key(compare))
+        print(s)
         res = []
         for key, value in s:
             if value[0] == 0:
