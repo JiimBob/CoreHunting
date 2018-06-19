@@ -2,7 +2,6 @@ import re
 import time
 
 from functools import cmp_to_key
-from pprint import pprint
 
 
 def parse_line(line):

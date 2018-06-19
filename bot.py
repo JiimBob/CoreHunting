@@ -1,9 +1,10 @@
 import json
 import os
 import random
+from pprint import pprint
+
 from discord.ext.commands import Bot
 from discord.ext import commands
-
 from discord import Game
 from analyzer import Analyzer
 
@@ -46,11 +47,12 @@ async def reset(ctx):
         pass
 
 
-@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.')
-@commands.has_any_role('Staff')
-async def stop():
-    await client.logout()
-    exit(0)
+@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', pass_context=True)
+async def stop(ctx):
+    for role in ctx.message.author.roles:
+        if role == 'Staff':
+            await client.logout()
+            exit(0)
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
