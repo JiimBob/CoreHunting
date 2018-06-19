@@ -1,11 +1,12 @@
 import json
 import os
 import random
-from pprint import pprint
+import sys
 
 from discord.ext.commands import Bot
 from discord.ext import commands
 from discord import Game
+from Settings import Settings
 from analyzer import Analyzer
 
 BOT_PREFIX = ("~", "?")
@@ -13,10 +14,12 @@ client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer()
 auth_file = 'auth.json'
 
+settings = Settings()
+
 
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
                 aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
-@commands.has_any_role('Staff')
+@commands.has_any_role(*settings.ranks)
 async def reset(ctx):
     channel = ctx.message.channel.name
     possible_replies = [
@@ -36,7 +39,7 @@ async def reset(ctx):
         'wiped'
         'destroyed'
     ]
-    if channel == 'calls' or channel == 'bottom-secret':
+    if channel in settings.channels:
         my_list = list(analyzer.worlds.items())
         for key, value in my_list:
             value[0] = 0
@@ -50,7 +53,8 @@ async def reset(ctx):
 @client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', pass_context=True)
 async def stop(ctx):
     for role in ctx.message.author.roles:
-        if role == 'Staff':
+        if role in settings.ranks:
+            print("Attempting to stop")
             await client.logout()
             exit(0)
 
@@ -62,7 +66,8 @@ async def commands():
                      "**Note:** Only works in #calls channel.\n\n"
                      "To declare a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
-                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n"
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', "
+                     "'seren', 'se', 'aagi', 'a']`.\n "
                      "**Note:** Only works in #calls channel.\n\n"
                      "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
                      "Example: `w103 d` or `56 0`\n"
@@ -99,7 +104,6 @@ async def on_ready():
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
-    await start_thread()
 
 
 mainMessage = None
@@ -107,8 +111,13 @@ mainMessage = None
 
 @client.event
 async def on_message(message):
+    print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
     # Check if we are in the right channel
-    if message.channel != channel:
+
+    if message.channel.name not in settings.channels:
+        return
+
+    if message.server.name not in settings.servers:
         return
 
     # Check if it's not our own message, don't want infinite loops
@@ -121,21 +130,9 @@ async def on_message(message):
     ret = analyzer.analyze_call(message.content)
 
     # and send it
-    if ret is not None:
-        await client.send_message(channel, ret)
+    if ret:
+        await client.send_message(message.channel, ret)
 
-
-async def start_thread():
-    global mainMessage, channel, newMessage
-    newMessage = True
-    mainMessage = None
-    server = [server for server in client.servers if server.name == "Core Hunting"][0]
-    channel = [channel for channel in server.channels if channel.name == "bottom-secret"][0]
-
-
-async def send_message(message):
-    global channel
-    await client.send_message(channel, message)
 
 if not os.path.exists(auth_file):
     print("no auth json found, please create one")
