@@ -1,6 +1,9 @@
 import re
 import time
 
+from functools import cmp_to_key
+from pprint import pprint
+
 
 def parse_line(line):
     line = line.lower()
@@ -16,6 +19,44 @@ def get_worlds():
         , 40, 42, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72
         , 73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114
         , 115, 116, 117, 119, 123, 124, 134, 137, 138, 139, 140]
+
+
+def get_core_name(argument):
+    switcher = {
+        'c': "Cres",
+        'cres': "Cres",
+        'sword': "Sword",
+        'edicts': "Sword",
+        'sw': "Sword",
+        'juna': "Juna",
+        'j': "Juna",
+        'seren': "Seren",
+        'se': "Seren",
+        'aagi': "Aagi",
+        'a': "Aagi",
+    }
+    return switcher.get(argument, "nothing")
+
+
+MAPPING = {'Cres': 0,
+           'Sword': 1,
+           'Juna': 2,
+           'Seren': 3,
+           'Aagi': 4}
+
+
+def compare(tup1, tup2):
+    a, (b, c) = tup1
+    x, (y, z) = tup2
+    if isinstance(b, int) and isinstance(y, int):
+        return -1 if b > y else 1
+    elif isinstance(b, str) and isinstance(y, int):
+        return -1
+    elif isinstance(b, int) and isinstance(y, str):
+        return 1
+    elif isinstance(b, str) and isinstance(y, str):
+        return -1 if MAPPING[b] < MAPPING[y] else 1
+    return -1 if b < y else 1
 
 
 class Analyzer:
@@ -44,15 +85,26 @@ class Analyzer:
             flints_filled = int(call)
             if 0 <= flints_filled <= 5:
                 self.worlds[world] = [flints_filled, time.time()]
-        # else. check for juna/aagi/seren/cres/sword/reset etc
-
+        else:
+            if str(call) in ['reset', 'r']:
+                return
+            elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']:
+                core = str(call)
+                core = get_core_name(core.lower())
+                self.worlds[world] = [core, time.time()]
+        # else. check for cres/sword/juna/seren/aagi/reset etc
         return self.get_order()
 
     def get_order(self):
-        s = sorted(self.worlds.items(), key=lambda v: (v[1][0], -v[1][1]), reverse=True)
+        my_list = list(self.worlds.items())
+        s = sorted(my_list, key=cmp_to_key(compare))
+        print(s)
         res = []
-        for key, value in s[:5]:
+        for key, value in s:
             if value[0] == 0:
-                break
-            res.append("w{} ({}/6)".format(key, value[0]))
-        return "->".join(res)
+                continue
+            elif isinstance(value[0], str):
+                res.append("w{}({})".format(key, value[0]))
+            elif isinstance(value[0], int):
+                res.append("w{}({}/6)".format(key, value[0]))
+        return " -> ".join(res)
