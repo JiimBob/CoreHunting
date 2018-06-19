@@ -1,8 +1,9 @@
 import json
 import os
-
+import discord
 from discord.ext.commands import Bot
 from discord.ext import commands
+
 from discord import Game
 from analyzer import Analyzer
 
@@ -12,12 +13,19 @@ analyzer = Analyzer()
 auth_file = 'auth.json'
 
 
-@client.command(name='reset', help='Refreshes current world data.')
-async def reset():
-    my_list = list(analyzer.worlds.items())
-    for key, value in my_list:
-        value[0] = 0
-        value[1] = 0
+@client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
+                aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
+@commands.has_any_role('Staff')
+async def reset(ctx):
+    channel = ctx.message.channel.name
+    if channel == 'calls' or channel == 'bottom-secret':
+        my_list = list(analyzer.worlds.items())
+        for key, value in my_list:
+            value[0] = 0
+            value[1] = 0
+        await client.say("World data has been obliterated.")
+    else:
+        pass
 
 
 @client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.')
@@ -30,22 +38,39 @@ async def stop():
 @client.command(name='commands', help='Lists commands for calling/scouting.')
 async def commands():
     await client.say("To add a world to queue: `w[#] [number of plinths]`.\n"
-                     "Example: `w59 4` or `14 2.`\n\n"
+                     "Example: `w59 4` or `14 2.`\n"
+                     "**Note:** Only works in #calls channel.\n\n"
                      "To declare a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
-                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n\n"
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n"
+                     "**Note:** Only works in #calls channel.\n\n"
                      "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
-                     "Example: `w103 d` or `56 0`\n\n")
+                     "Example: `w103 d` or `56 0`\n"
+                     "**Note:** Only works in #calls channel.\n\n"
+                     "To get a list of current ranks in the friends chat: `?ranks`.\n"
+                     "Example: `?ranks`\n"
+                     "**Note:** Only works in #bots channel.\n\n"
+                     "To get information about the friends chat: `?info`\n"
+                     "Example: `?info`\n"
+                     "**Note:** Only works in #bots channel.\n\n")
 
 
-@client.command(name='info', help='Lists FC info.')
-async def info():
-    await client.say("This will say FC info! Eventually.")
+@client.command(name='info', help='Lists FC info.', pass_context=True)
+async def info(ctx):
+    channel = ctx.message.channel.name
+    if channel == 'bots' or channel == 'bottom-secret':
+        await client.say("This will say FC info! Eventually.")
+    else:
+        pass
 
 
-@client.command(name='ranks', help='Lists current FC ranks.')
-async def ranks():
-    await client.say("This will display current FC ranks if Insulate wasn't being such a slow ass and gave them to me.")
+@client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
+async def ranks(ctx):
+    channel = ctx.message.channel.name
+    if channel == 'bots' or channel == 'bottom-secret':
+        await client.say("This will display current FC ranks when Insulate stops being slow ass and gives them to me.")
+    else:
+        pass
 
 
 @client.event
