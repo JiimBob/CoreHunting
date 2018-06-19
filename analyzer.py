@@ -1,3 +1,4 @@
+import math
 import re
 import time
 
@@ -95,18 +96,43 @@ class Analyzer:
         return self.get_order()
 
     def get_order(self):
-        my_list = list(self.worlds.items())
-        s = sorted(my_list, key=cmp_to_key(compare))
-        print(s)
-        res = []
-        for key, value in s:
-            if value[0] == 0:
-                continue
-            elif isinstance(value[0], str):
-                res.append("w{}({})".format(key, value[0]))
-            elif isinstance(value[0], int):
-                res.append("w{}({}/6)".format(key, value[0]))
-        if res:
-            return " -> ".join(res)
-        else:
-            return "No worlds for the moment, get scouting!"
+        active_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], str)]
+        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and v[0] > 0]
+        next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
+        active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
+
+        n = max(len(next_list_s), len(active_list_s))
+        table = "|   Active   |    Next    |\n"
+        table += "-"*(3+12*2)+"\n"
+        for i in range(n):
+            if i < len(active_list_s):
+                (world, value) = active_list_s[i]
+                s = "w" + str(world) + "(" + str(value[0]) + ")"
+                l = len(s)
+                s = " " * int(math.ceil(6 - l / 2)) + s + " " * int(math.floor(6 - l / 2))
+                table += "|" + s + "|"
+            else:
+                table += "|" + " " * 12 + "|"
+            if i < len(next_list_s):
+                (world, value) = next_list_s[i]
+                s = "w" + str(world) + "(" + str(value[0]) + "/6)"
+                l = len(s)
+                s = " " * int(math.ceil(6 - l / 2)) + s + " " * int(math.floor(6 - l / 2))
+                table += s + "|\n"
+            else:
+                table += "" + " " * 12 + "|\n"
+
+        return "```" + table + "```"
+
+        # res = []
+        # for key, value in s:
+        #     if value[0] == 0:
+        #         continue
+        #     elif isinstance(value[0], str):
+        #         res.append("w{}({})".format(key, value[0]))
+        #     elif isinstance(value[0], int):
+        #         res.append("w{}({}/6)".format(key, value[0]))
+        # if res:
+        #     return " -> ".join(res)
+        # else:
+        #     return "No worlds for the moment, get scouting!"

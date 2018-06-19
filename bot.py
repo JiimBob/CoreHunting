@@ -112,17 +112,16 @@ mainMessage = None
 
 @client.event
 async def on_message(message):
+    # Check if it's not our own message, don't want infinite loops
+    if message.author == client.user:
+        return
+
     print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
     # Check if we are in the right channel
-
     if message.channel.name not in settings.channels:
         return
 
     if message.server.name not in settings.servers:
-        return
-
-    # Check if it's not our own message, don't want infinite loops
-    if message.author == client.user:
         return
 
     await client.process_commands(message)
