@@ -49,7 +49,7 @@ async def start_thread():
     newMessage = True
     mainMessage = None
     server = [server for server in client.servers if server.name == "Core Hunting"][0]
-    channel = [channel for channel in server.channels if channel.name == "bottom-secret"][0]
+    channel = [channel for channel in server.channels if channel.name == "fixdeded-bot-testing"][0]
 
 
 async def send_message(message):
