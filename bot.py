@@ -1,14 +1,35 @@
 import json
 import os
-import discord
 
+from pprint import pprint
+from discord.ext.commands import Bot
 from discord import Game
 from analyzer import Analyzer
 
-client = discord.Client()
+BOT_PREFIX = ("~", "?")
+client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer()
 auth_file = 'auth.json'
 
+
+@client.command(name='reset')
+async def reset():
+    my_list = list(analyzer.worlds.items())
+    for key, value in my_list:
+        value[0] = 0
+        value[1] = 0
+
+
+@client.command(name='stop')
+async def stop():
+    await client.logout()
+    exit(0)
+
+
+@client.command(name='commands')
+async def commands():
+    #list commands
+    return
 
 @client.event
 async def on_ready():
@@ -32,15 +53,14 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content == '!stop':
-        await client.logout()
-        exit(0)
+    await client.process_commands(message)
 
     # Analyse the message
     ret = analyzer.analyze_call(message.content)
 
     # and send it
-    send_message(ret)
+    if ret is not None:
+        await client.send_message(channel, ret)
 
 
 async def start_thread():
@@ -48,13 +68,12 @@ async def start_thread():
     newMessage = True
     mainMessage = None
     server = [server for server in client.servers if server.name == "Core Hunting"][0]
-    channel = [channel for channel in server.channels if channel.name == "fixdeded-bot-testing"][0]
+    channel = [channel for channel in server.channels if channel.name == "bottom-secret"][0]
 
 
 async def send_message(message):
     global channel
-    if message:
-        await client.send_message(channel, message)
+    await client.send_message(channel, message)
 
 if not os.path.exists(auth_file):
     print("no auth json found, please create one")

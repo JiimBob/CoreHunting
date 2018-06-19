@@ -8,7 +8,7 @@ from pprint import pprint
 def parse_line(line):
     line = line.lower()
     line = re.sub("(?<=[a-z])(?=\\d)|(?<=\\d)(?=[a-z])|\\.", " ", line)
-    line = line.replace("w", "").replace(",", " ").replace("/", " ").replace(" and ", "").strip()
+    line = re.sub("^(world|w)", "", line)
     line = line.replace("  ", " ")
     line = re.sub("(dead|gone|d)", "0", line)
     return line
@@ -35,7 +35,7 @@ def get_core_name(argument):
         'aagi': "Aagi",
         'a': "Aagi",
     }
-    return switcher.get(argument, "nothing")
+    return switcher.get(argument, "0")
 
 
 MAPPING = {'Cres': 0,
@@ -49,14 +49,13 @@ def compare(tup1, tup2):
     a, (b, c) = tup1
     x, (y, z) = tup2
     if isinstance(b, int) and isinstance(y, int):
-        return -1 if b > y else 1
+        return -(2 * int((y, c) < (b, z)) - 1)
     elif isinstance(b, str) and isinstance(y, int):
         return -1
     elif isinstance(b, int) and isinstance(y, str):
         return 1
     elif isinstance(b, str) and isinstance(y, str):
         return -1 if MAPPING[b] < MAPPING[y] else 1
-    return -1 if b < y else 1
 
 
 class Analyzer:
