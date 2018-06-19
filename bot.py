@@ -5,9 +5,7 @@ import sys
 
 from discord.ext.commands import Bot
 from discord.ext import commands
-
 from discord import Game
-
 from Settings import Settings
 from analyzer import Analyzer
 
@@ -52,12 +50,12 @@ async def reset(ctx):
         pass
 
 
-@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.')
+@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def stop():
+async def stop(ctx):
     print("Attempting to stop")
     await client.logout()
-    sys.exit(0)
+    exit(0)
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
@@ -94,7 +92,19 @@ async def info(ctx):
 async def ranks(ctx):
     channel = ctx.message.channel.name
     if channel == 'bots' or channel == 'bottom-secret':
-        await client.say("This will display current FC ranks when Insulate stops being slow ass and gives them to me.")
+        await client.say("```"
+                         "Blue Raivyn  - General\n"
+                         "Sscared      - General\n"
+                         "Wokkafumpe   - General\n"
+                         "Bomy         - General\n"
+                         "Insulate     - General\n"
+                         "WealthRS     - Captain\n"
+                         "DTP          - Captain\n"
+                         "Pur          - Captain\n"
+                         "Z oD         - Captain\n"
+                         "Legend-ary   - Captain\n"
+                         "HuntrMetroid - Captain"
+                         "```")
     else:
         pass
 
@@ -132,6 +142,11 @@ async def on_message(message):
     # and send it
     if ret:
         await client.send_message(message.channel, ret)
+
+
+@client.event
+async def on_command_error(ctx, error):
+    print("Rip, error")
 
 
 if not os.path.exists(auth_file):
