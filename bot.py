@@ -1,8 +1,8 @@
 import json
 import os
 
-from pprint import pprint
 from discord.ext.commands import Bot
+from discord.ext import commands
 from discord import Game
 from analyzer import Analyzer
 
@@ -12,7 +12,7 @@ analyzer = Analyzer()
 auth_file = 'auth.json'
 
 
-@client.command(name='reset')
+@client.command(name='reset', help='Refreshes current world data.')
 async def reset():
     my_list = list(analyzer.worlds.items())
     for key, value in my_list:
@@ -20,16 +20,33 @@ async def reset():
         value[1] = 0
 
 
-@client.command(name='stop')
+@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.')
+@commands.has_any_role('Staff')
 async def stop():
     await client.logout()
     exit(0)
 
 
-@client.command(name='commands')
+@client.command(name='commands', help='Lists commands for calling/scouting.')
 async def commands():
-    #list commands
-    return
+    await client.say("To add a world to queue: `w[#] [number of plinths]`.\n"
+                     "Example: `w59 4` or `14 2.`\n\n"
+                     "To declare a core: `w[#] [core name]`.\n"
+                     "Example: `w12 cres` or `42 seren`.\n"
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n\n"
+                     "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
+                     "Example: `w103 d` or `56 0`\n\n")
+
+
+@client.command(name='info', help='Lists FC info.')
+async def info():
+    await client.say("This will say FC info! Eventually.")
+
+
+@client.command(name='ranks', help='Lists current FC ranks.')
+async def ranks():
+    await client.say("This will display current FC ranks if Insulate wasn't being such a slow ass and gave them to me.")
+
 
 @client.event
 async def on_ready():
