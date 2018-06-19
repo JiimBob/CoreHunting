@@ -122,6 +122,9 @@ async def on_message(message):
     if message.channel.name not in settings.channels:
         return
 
+    if message.server.name not in settings.servers:
+        return
+
     # Check if it's not our own message, don't want infinite loops
     if message.author == client.user:
         return
