@@ -15,6 +15,7 @@ analyzer = Analyzer()
 auth_file = 'auth.json'
 
 settings = Settings()
+last_message = None
 
 
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
@@ -122,6 +123,7 @@ mainMessage = None
 
 @client.event
 async def on_message(message):
+    global last_message
     # Check if it's not our own message, don't want infinite loops
     if message.author == client.user:
         return
@@ -141,7 +143,10 @@ async def on_message(message):
 
     # and send it
     if ret:
-        await client.send_message(message.channel, ret)
+        new_message = await client.send_message(message.channel, ret)
+        if last_message:
+            await client.delete_message(last_message)
+        last_message = new_message
 
 
 @client.event

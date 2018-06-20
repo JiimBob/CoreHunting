@@ -1,3 +1,4 @@
+import datetime
 import math
 import re
 import time
@@ -101,8 +102,8 @@ class Analyzer:
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
         n = max(len(next_list_s), len(active_list_s))
-        table = "|   Active   |    Next    |\n"
-        table += "-"*(3+12*2)+"\n"
+        table = "|   Active   |      Next      |\n"
+        table += "-"*(3+12+16)+"\n"
         for i in range(n):
             if i < len(active_list_s):
                 (world, value) = active_list_s[i]
@@ -114,12 +115,13 @@ class Analyzer:
                 table += "|" + " " * 12 + "|"
             if i < len(next_list_s):
                 (world, value) = next_list_s[i]
-                s = "w" + str(world) + "(" + str(value[0]) + "/6)"
+                age = str(math.floor((time.time()-value[1])/60))
+                s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
                 l = len(s)
-                s = " " * int(math.ceil(6 - l / 2)) + s + " " * int(math.floor(6 - l / 2))
+                s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
                 table += s + "|\n"
             else:
-                table += "" + " " * 12 + "|\n"
+                table += "" + " " * 16 + "|\n"
 
         return "```" + table + "```"
 
