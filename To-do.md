@@ -4,7 +4,7 @@
 - [ ] Make cores that have started auto-expire after 2:30.
 
 
-## Possiblily? 
+## Possibility? 
 **May or may not happen**
 
 - [ ] Add suggestions to this part of the to-do list.
