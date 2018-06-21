@@ -144,6 +144,27 @@ class Analyzer:
 
         return "```" + table + "```"
 
+    def get_scout_start(self, amount):
+        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int)]
+        maxSum = 0
+        start = 0
+        currentTime = time.time()
+        for i in range(len(next_list) - amount + 1):
+            currentSum = 0
+            for j in range(i, i + amount):
+                (world, value) = next_list[j]
+                if len(value) >= 3:
+                    currentSum = currentSum + (currentTime - value[2])
+            if currentSum > maxSum:
+                maxSum = currentSum
+                start = i
+        result = {}
+        for i in range(amount):
+            (world, value) = next_list[start + i]
+            result[i] = world
+            self.worlds[world] = [value[0], value[1], currentTime]
+        return result
+
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 
