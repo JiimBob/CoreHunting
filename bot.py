@@ -145,9 +145,9 @@ async def on_ready():
     print('ID: ' + client.user.id)
 
     server = [x for x in client.servers if x.name == settings.servers[0]][0]
-    #bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
+    bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
 
-    #await analyzer.relay(bot_only_channel)
+    await analyzer.relay(bot_only_channel)
 
 
 mainMessage = None
