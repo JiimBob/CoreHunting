@@ -3,6 +3,7 @@ import os
 import re
 import time
 import json
+from discord.ext.commands import Bot
 
 
 def parse_line(line):
@@ -53,7 +54,8 @@ MAPPING = {'Cres': 0,
            'Sword': 1,
            'Juna': 2,
            'Seren': 3,
-           'Aagi': 4}
+           'Aagi': 4,
+           6: 6}
 
 
 def _json_keys_to_str(x):
@@ -64,14 +66,15 @@ def _json_keys_to_str(x):
 
 class Analyzer:
 
-    def __init__(self):
+    def __init__(self, client):
         self.worlds = {}
         self.load()
+        self.client = client
+        self.table_messages = {}  # dict of tables with messages of the table
 
-    def analyze_call(self, message):
-        parsed = parse_line(message)
+    async def analyze_call(self, message):
+        parsed = parse_line(message.content)
         split = parsed.split()
-        return_messages = []
         if len(split) != 2:
             return
         world = split[0]
@@ -82,14 +85,15 @@ class Analyzer:
 
         world = int(world)
         if world in _special_worlds:
-            return_messages.append(("NOTE, w{} is a {}".format(world, _special_worlds[world])))
+            await self.client.send_message(message.channel, "NOTE, w{} is a {}".format(world, _special_worlds[world]))
 
         if world not in self.worlds:
-            return ["{} is not a p2p english world".format(world)]
+            await self.client.send_message(message.channel, "{} is not a p2p english world".format(world))
+            return
 
         if call.isdigit():
             flints_filled = int(call)
-            if 0 <= flints_filled <= 5:
+            if 0 <= flints_filled <= 6:
                 self.worlds[world] = [flints_filled, time.time()]
         else:
             if str(call) in ['reset', 'r']:
@@ -99,12 +103,20 @@ class Analyzer:
                 core = get_core_name(core.lower())
                 self.worlds[world] = [core, time.time()]
         # else. check for cres/sword/juna/seren/aagi/reset etc
-        return_messages.append(self.get_table())
-        return return_messages
+        await self.relay(message.channel)
+
+    async def relay(self, channel):
+        relay_message = self.get_table()
+        for ch, msg in self.table_messages.items():
+            if ch == channel:
+                await self.client.delete_message(self.table_messages[channel])
+            else:
+                await self.client.edit_message(msg, relay_message)
+        self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
     def get_table(self):
-        active_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], str) and time.time() - v[1] < 150]
-        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and v[0] > 0]
+        active_list = [(k, v) for k, v in self.worlds.items() if (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
+        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and 6 > v[0] > 0]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
@@ -132,14 +144,16 @@ class Analyzer:
 
         return "```" + table + "```"
 
+    def reset(self):
+        self.worlds = {w: (0, 0, 0) for w in _all_worlds}
+
     def save(self):
         with open(_save_file, 'w') as f:
-            json.dump(self.worlds, f)
+            json.dump(self.worlds, f, indent=2)
 
     def load(self):
         if os.path.isfile(_save_file):
             with open(_save_file, 'r') as f:
                 self.worlds = json.load(f, object_hook=_json_keys_to_str)
         else:
-            self.worlds = {w: (0, 0) for w in _all_worlds}
-        print(self.worlds)
+            self.reset()

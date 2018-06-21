@@ -11,18 +11,17 @@ from analyzer import Analyzer
 
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
-analyzer = Analyzer()
+analyzer = Analyzer(client)
 auth_file = 'auth.json'
 
 settings = Settings()
-last_message = None
 
 
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
                 aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def reset(ctx):
-    channel = ctx.message.channel.name
+    channel = ctx.message.channel
     possible_replies = [
         'abolished',
         'obliterated',
@@ -40,15 +39,11 @@ async def reset(ctx):
         'wiped'
         'destroyed'
     ]
-    if channel in settings.channels:
-        my_list = list(analyzer.worlds.items())
-        for key, value in my_list:
-            value[0] = 0
-            value[1] = 0
+    if channel.name in settings.channels:
+        analyzer.reset()
         response = "World data has been {}.".format(random.choice(possible_replies))
-        await client.say(response)
-    else:
-        pass
+        await client.send_message(channel, response)
+        await analyzer.relay(channel)
 
 
 @client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', pass_context=True)
@@ -124,7 +119,6 @@ mainMessage = None
 
 @client.event
 async def on_message(message):
-    global last_message
     # Check if it's not our own message, don't want infinite loops
     if message.author == client.user:
         return
@@ -144,16 +138,7 @@ async def on_message(message):
     await client.process_commands(message)
 
     # Analyse the message
-    ret_msgs = analyzer.analyze_call(message.content)
-
-    # and send it
-    if ret_msgs:
-        new_message = None
-        for ret in ret_msgs:
-            new_message = await client.send_message(message.channel, ret)
-        if last_message:
-            await client.delete_message(last_message)
-        last_message = new_message
+    await analyzer.analyze_call(message)
 
 
 @client.event
