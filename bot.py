@@ -17,6 +17,13 @@ auth_file = 'auth.json'
 settings = Settings()
 
 
+@client.command(name='relay', help="Relays the current world data", pass_context=True)
+async def relay(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        await analyzer.relay(channel)
+
+
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
                 aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
@@ -112,6 +119,11 @@ async def on_ready():
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
+
+    server = [x for x in client.servers if x.name == settings.servers[0]][0]
+    bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
+
+    await analyzer.relay(bot_only_channel)
 
 
 mainMessage = None
