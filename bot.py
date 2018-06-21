@@ -55,6 +55,7 @@ async def reset(ctx):
 @commands.has_any_role(*settings.ranks)
 async def stop(ctx):
     print("Attempting to stop")
+    analyzer.save()
     await client.logout()
     exit(0)
 
@@ -128,6 +129,10 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if message.content == "!stop":
+        await client.logout()
+        sys.exit(0)
+
     print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
     # Check if we are in the right channel
     if message.channel.name not in settings.channels:
@@ -139,11 +144,13 @@ async def on_message(message):
     await client.process_commands(message)
 
     # Analyse the message
-    ret = analyzer.analyze_call(message.content)
+    ret_msgs = analyzer.analyze_call(message.content)
 
     # and send it
-    if ret:
-        new_message = await client.send_message(message.channel, ret)
+    if ret_msgs:
+        new_message = None
+        for ret in ret_msgs:
+            new_message = await client.send_message(message.channel, ret)
         if last_message:
             await client.delete_message(last_message)
         last_message = new_message
@@ -151,7 +158,7 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
-    print("Rip, error")
+    print("Rip, error {}".format(error))
 
 
 if not os.path.exists(auth_file):
