@@ -2,7 +2,8 @@
 **Should do prior to release**
 
 - [ ] Make cores that have started auto-expire after 2:30.
-
+- [ ] Call out caches every hour.
+- [ ] Don't delete last message when its not a table print
 
 ## Possibility?
 **May or may not happen**
