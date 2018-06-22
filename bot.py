@@ -3,6 +3,7 @@ import os
 import random
 import sys
 
+from datetime import datetime
 from discord.ext.commands import Bot
 from discord.ext import commands
 from discord import Game
@@ -17,7 +18,7 @@ auth_file = 'auth.json'
 settings = Settings()
 
 
-@client.command(name='relay', help="Relays the current world data", pass_context=True)
+@client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)
 async def relay(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -60,6 +61,13 @@ async def stop(ctx):
     analyzer.save()
     await client.logout()
     exit(0)
+
+
+@client.command(name='ping', pass_context=True)
+async def ping(ctx):
+    d = datetime.utcnow() - ctx.message.timestamp
+    s = d.seconds * 1000 + d.microseconds // 1000
+    await client.send_message(ctx.message.channel, "Pong: {}ms".format(s))
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
