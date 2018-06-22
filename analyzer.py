@@ -2,6 +2,7 @@ import math
 import os
 import re
 import time
+import random
 import json
 from discord.ext.commands import Bot
 
@@ -94,7 +95,7 @@ class Analyzer:
         if call.isdigit():
             flints_filled = int(call)
             if 0 <= flints_filled <= 6:
-                self.worlds[world] = [flints_filled, time.time()]
+                self.worlds[world] = [flints_filled, time.time(), time.time()]
         else:
             if str(call) in ['reset', 'r']:
                 return
@@ -144,27 +145,33 @@ class Analyzer:
 
         return "```" + table + "```"
 
-    def get_scout_start(self, amount):
-        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int)]
-        maxSum = 0
-        start = 0
-        currentTime = time.time()
-        for i in range(len(next_list) - amount + 1):
-            currentSum = 0
+    # command = ?req *amount
+    # optional parameter amount can range from 1 to 20
+    # tell s the user to scout a list of worlds
+    async def get_scout_info(self, channel, username, args):
+        amount = 10
+        if len(args) >= 1:
+            if args[0].isdigit():
+                amount = max(1, min(20, int(args[0])))
+        worlds = [k for k, v in self.worlds.items() if time.time() - v[1] > 30*60 and time.time() - v[2] > 15*60]
+        if len(worlds) > 1:
+            if amount > len(worlds):
+               amount = len(worlds)
+               i = 0
+            else:
+                i = random.randint(0, len(worlds)-amount)
+            result = worlds[i:i+amount]
             for j in range(i, i + amount):
-                (world, value) = next_list[j]
-                if len(value) >= 3:
-                    currentSum = currentSum + (currentTime - value[2])
-            if currentSum > maxSum:
-                maxSum = currentSum
-                start = i
-        result = {}
-        for i in range(amount):
-            (world, value) = next_list[start + i]
-            result[i] = world
-            self.worlds[world] = [value[0], value[1], currentTime]
-        return result
-
+                world = self.worlds[worlds[j]] 
+                self.worlds[worlds[j]] = [world[0], world[1], time.time()]
+                
+            response = "error getting worlds"
+            if len(result) == 1:
+                response = "{}, please scout world {}".format(username, result[0])
+            elif len(result) >= 2:
+                response = "{}, please scout {}".format(username, result)
+            await self.client.send_message(channel, response)
+        
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 

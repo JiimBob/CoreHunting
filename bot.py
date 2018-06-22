@@ -16,30 +16,13 @@ auth_file = 'auth.json'
 
 settings = Settings()
 
-@client.command(name='req', help='Request a range of worlds to scout.', aliases=['request', 'scout'], pass_context=True)
-async def req(ctx):
-    channel = ctx.message.channel.name
-    if channel in settings.channels:
-        username = ctx.message.author.name
-        args = ctx.message.content.split(" ")
-        worlds = {}
-        if len(args) == 1:
-            worlds = analyzer.get_scout_start(10)
-        if len(args) == 2:
-            if args[1].isdigit():
-                amount = int(args[1])
-                if amount > 20:
-                    amount = 20
-                if amount <= 0:
-                    return
-                worlds = analyzer.get_scout_start(amount)
 
-        response = "error getting worlds"
-        if len(worlds) == 1:
-            response = "{}, please scout world {}".format(username, worlds[0])
-        elif len(worlds) > 1:
-            response = "{}, please scout from world {} to {}".format(username, worlds[0], worlds[len(worlds) - 1])
-        await client.say(response)
+@client.command(name='req', help='Request a range of worlds to scout.', aliases=['request', 'scout'], pass_context=True)
+async def req(ctx, *args):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        username = ctx.message.author.name
+        await analyzer.get_scout_info(channel, username, args)
 
 @client.command(name='relay', help="Relays the current world data", pass_context=True)
 async def relay(ctx):
