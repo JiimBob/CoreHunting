@@ -2,6 +2,7 @@ import math
 import os
 import re
 import time
+import random
 import json
 
 
@@ -143,6 +144,33 @@ class Analyzer:
 
         return "```" + table + "```"
 
+    # command = ?req *amount
+    # optional parameter amount can range from 1 to 20
+    # tell s the user to scout a list of worlds
+    async def get_scout_info(self, channel, username, args):
+        amount = 10
+        if len(args) >= 1:
+            if args[0].isdigit():
+                amount = max(1, min(20, int(args[0])))
+        worlds = [k for k, v in self.worlds.items() if time.time() - v[1] > 30*60 and time.time() - v[2] > 15*60]
+        if len(worlds) > 1:
+            if amount > len(worlds):
+               amount = len(worlds)
+               i = 0
+            else:
+                i = random.randint(0, len(worlds)-amount)
+            result = worlds[i:i+amount]
+            for j in range(i, i + amount):
+                world = self.worlds[worlds[j]] 
+                self.worlds[worlds[j]] = [world[0], world[1], time.time()]
+                
+            response = "error getting worlds"
+            if len(result) == 1:
+                response = "{}, please scout world {}".format(username, result[0])
+            elif len(result) >= 2:
+                response = "{}, please scout {}".format(username, result)
+            await self.client.send_message(channel, response)
+        
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 
