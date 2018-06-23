@@ -4,7 +4,6 @@ import re
 import time
 import random
 import json
-from discord.ext.commands import Bot
 
 
 def parse_line(line):
@@ -95,14 +94,14 @@ class Analyzer:
         if call.isdigit():
             flints_filled = int(call)
             if 0 <= flints_filled <= 6:
-                self.worlds[world] = [flints_filled, time.time(), time.time()]
+                self.worlds[world] = (flints_filled, time.time(), time.time())
         else:
             if str(call) in ['reset', 'r']:
                 return
             elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']:
                 core = str(call)
                 core = get_core_name(core.lower())
-                self.worlds[world] = [core, time.time()]
+                self.worlds[world] = (core, time.time(), time.time())
         # else. check for cres/sword/juna/seren/aagi/reset etc
         await self.relay(message.channel)
 
