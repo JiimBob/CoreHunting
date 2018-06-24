@@ -18,6 +18,14 @@ auth_file = 'auth.json'
 settings = Settings()
 
 
+@client.command(name='req', help='Request a range of worlds to scout.', aliases=['request', 'scout'], pass_context=True)
+async def req(ctx, *args):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        username = ctx.message.author.name
+        await analyzer.get_scout_info(channel, username, args)
+
+
 @client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)
 async def relay(ctx):
     channel = ctx.message.channel
@@ -162,7 +170,7 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
-    print("Rip, error {}".format(error))
+    print("Rip, error {}".format(ctx))
 
 
 if not os.path.exists(auth_file):
