@@ -85,7 +85,7 @@ class Analyzer:
 
         world = int(world)
         if world in _special_worlds:
-            await self.client.send_message(message.channel, "NOTE, w{} is a {}".format(world, _special_worlds[world]))
+            await self.client.send_message(message.channel, "NOTE, w{} is a {}.".format(world, _special_worlds[world]))
 
         if world not in self.worlds:
             await self.client.send_message(message.channel, "{} is not a p2p english world".format(world))
