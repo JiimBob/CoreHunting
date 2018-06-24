@@ -120,7 +120,7 @@ class Analyzer:
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
-        n = max(len(next_list_s), len(active_list_s))
+        n = max(len(next_list_s), len(active_list_s), 1)
         table = "|   Active   |      Next      |\n"
         table += "-" * (3 + 12 + 16) + "\n"
         for i in range(n):
@@ -139,6 +139,8 @@ class Analyzer:
                 l = len(s)
                 s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
                 table += s + "|\n"
+            elif i - 2 < len(next_list_s):
+                table += " Nil, scout pls" + " " + "|\n"
             else:
                 table += "" + " " * 16 + "|\n"
 
@@ -155,8 +157,8 @@ class Analyzer:
         worlds = [k for k, v in self.worlds.items() if time.time() - v[1] > 30*60 and time.time() - v[2] > 15*60]
         if len(worlds) > 1:
             if amount > len(worlds):
-               amount = len(worlds)
-               i = 0
+                amount = len(worlds)
+                i = 0
             else:
                 i = random.randint(0, len(worlds)-amount)
             result = worlds[i:i+amount]
