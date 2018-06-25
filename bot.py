@@ -171,7 +171,7 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
-    print("Rip, error {}".format(ctx))
+    print("Rip, error {}, {}".format(ctx, error))
 
 
 if not os.path.exists(auth_file):

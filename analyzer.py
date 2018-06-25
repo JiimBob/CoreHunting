@@ -22,7 +22,7 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
                116, 117, 119, 123, 124, 134, 137, 138, 139, 140}
 
 
-def _special_worlds():
+def _get_special_worlds():
     aus = "Australia/NZ world, bad servers"
     legacy = "Legacy only world, try to avoid"
     t1500 = "1500 total world"
@@ -30,7 +30,7 @@ def _special_worlds():
             96: "Quick chat world, avoid", 48: "2600 total world", 30: "2000 total world", 86: t1500, 114: t1500}
 
 
-_special_worlds = _special_worlds()
+_special_worlds = _get_special_worlds()
 
 
 def get_core_name(argument):
@@ -39,6 +39,7 @@ def get_core_name(argument):
         'cres': "Cres",
         'sword': "Sword",
         'edicts': "Sword",
+        'e': "Sword",
         'sw': "Sword",
         'juna': "Juna",
         'j': "Juna",
@@ -98,7 +99,7 @@ class Analyzer:
         else:
             if str(call) in ['reset', 'r']:
                 return
-            elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']:
+            elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a', 'e']:
                 core = str(call)
                 core = get_core_name(core.lower())
                 self.worlds[world] = (core, time.time(), time.time())
@@ -115,9 +116,12 @@ class Analyzer:
         self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
     def get_table(self):
-        active_list = [(k, v) for k, v in self.worlds.items() if (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
-        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60*25]
+        active_list = [(k, v) for k, v in self.worlds.items() if
+                       (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
+        next_list = [(k, v) for k, v in self.worlds.items() if
+                     isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 25]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
+        next_list_s = next_list_s[:10]
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
         n = max(len(next_list_s), len(active_list_s))
@@ -152,25 +156,25 @@ class Analyzer:
         if len(args) >= 1:
             if args[0].isdigit():
                 amount = max(1, min(20, int(args[0])))
-        worlds = [k for k, v in self.worlds.items() if time.time() - v[1] > 30*60 and time.time() - v[2] > 15*60]
+        worlds = [k for k, v in self.worlds.items() if k not in _special_worlds and time.time() - v[1] > 30 * 60 and time.time() - v[2] > 15 * 60]
         if len(worlds) > 1:
             if amount > len(worlds):
-               amount = len(worlds)
-               i = 0
+                amount = len(worlds)
+                i = 0
             else:
-                i = random.randint(0, len(worlds)-amount)
-            result = worlds[i:i+amount]
+                i = random.randint(0, len(worlds) - amount)
+            result = worlds[i:i + amount]
             for j in range(i, i + amount):
-                world = self.worlds[worlds[j]] 
-                self.worlds[worlds[j]] = [world[0], world[1], time.time()]
-                
+                world = self.worlds[worlds[j]]
+                self.worlds[worlds[j]] = (world[0], world[1], time.time())
+
             response = "error getting worlds"
             if len(result) == 1:
                 response = "{}, please scout world {}".format(username, result[0])
             elif len(result) >= 2:
                 response = "{}, please scout {}".format(username, result)
             await self.client.send_message(channel, response)
-        
+
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 
