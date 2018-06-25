@@ -71,7 +71,7 @@ async def stop(ctx):
     exit(0)
 
 
-@client.command(name='ping', pass_context=True)
+@client.command(name='ping', help='Checks bots ping.', pass_context=True)
 async def ping(ctx):
     d = datetime.utcnow() - ctx.message.timestamp
     s = d.seconds * 1000 + d.microseconds // 1000
@@ -138,7 +138,6 @@ async def on_ready():
 
     server = [x for x in client.servers if x.name == settings.servers[0]][0]
     bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
-
     await analyzer.relay(bot_only_channel)
 
 

@@ -86,7 +86,7 @@ class Analyzer:
 
         world = int(world)
         if world in _special_worlds:
-            await self.client.send_message(message.channel, "NOTE, w{} is a {}".format(world, _special_worlds[world]))
+            await self.client.send_message(message.channel, "NOTE, w{} is a {}.".format(world, _special_worlds[world]))
 
         if world not in self.worlds:
             await self.client.send_message(message.channel, "{} is not a p2p english world".format(world))
@@ -124,7 +124,7 @@ class Analyzer:
         next_list_s = next_list_s[:10]
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
-        n = max(len(next_list_s), len(active_list_s))
+        n = max(len(next_list_s), len(active_list_s), 1)
         table = "|   Active   |      Next      |\n"
         table += "-" * (3 + 12 + 16) + "\n"
         for i in range(n):
@@ -143,6 +143,8 @@ class Analyzer:
                 l = len(s)
                 s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
                 table += s + "|\n"
+            elif i - 2 < len(next_list_s):
+                table += " Nil, scout pls" + " " + "|\n"
             else:
                 table += "" + " " * 16 + "|\n"
 
