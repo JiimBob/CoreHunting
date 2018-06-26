@@ -1,6 +1,7 @@
 {
   "servers": ["Core Hunting", "Leon"],
   "channels": ["fixdeded-bot-testing", "bottom-secret", "corecalls"],
-  "ranks": ["Staff", "wealths purple role"]
+  "ranks": ["Staff", "wealths purple role"],
+  "bot-only-channel": "bot-calls-only"
 
 }
