@@ -96,7 +96,10 @@ async def commands():
                      "**Note:** Only works in #bots channel.\n\n"
                      "To get information about the friends chat: `?info`\n"
                      "Example: `?info`\n"
-                     "**Note:** Only works in #bots channel.\n\n")
+                     "**Note:** Only works in #bots channel.\n\n"
+                     "To get recommended words to scout: `?req` or `?req [#]`.\n"
+                     "The # is the amount of worlds you are requesting to scout.\n"
+                     "Example: `?req` or `?req 4`\n\n")
 
 
 @client.command(name='info', help='Lists FC info.', pass_context=True)
