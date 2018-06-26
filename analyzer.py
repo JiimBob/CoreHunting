@@ -11,7 +11,7 @@ def parse_line(line):
     line = re.sub("(?<=[a-z])(?=\\d)|(?<=\\d)(?=[a-z])|\\.", " ", line)
     line = re.sub("^(world|w)", "", line)
     line = line.replace("  ", " ")
-    line = re.sub("(dead|gone|d)", "0", line)
+    line = re.sub("( dead| gone| d)", " 0", line)
     return line
 
 
@@ -71,6 +71,7 @@ class Analyzer:
         self.load()
         self.client = client
         self.table_messages = {}  # dict of tables with messages of the table
+        self.scouts = {} # current scouts with their assigned worlds
 
     async def analyze_call(self, message):
         parsed = parse_line(message.content)
@@ -85,23 +86,35 @@ class Analyzer:
 
         world = int(world)
         if world in _special_worlds:
-            await self.client.send_message(message.channel, "NOTE, w{} is a {}.".format(world, _special_worlds[world]))
+            if str(message.channel.type) != "private":
+                await self.client.send_message(message.channel, "NOTE, w{} is a {}.".format(world, _special_worlds[world]))
 
         if world not in self.worlds:
             await self.client.send_message(message.channel, "{} is not a p2p english world".format(world))
             return
 
+        #clear worlds from scouts
+        for scout in self.scouts:
+            for to_be_scouted in self.scouts[scout]["worlds"]:
+                if to_be_scouted == world:
+                    self.scouts[scout]["worlds"].remove(world)
+        
         if call.isdigit():
             flints_filled = int(call)
             if 0 <= flints_filled <= 6:
-                self.worlds[world] = (flints_filled, time.time(), time.time())
+                # rescout worlds with more cores faster to stay on top of what is next
+                # extra time till rescout is 26 mins -4 min for each plinth
+                # for now this also includes 5/6 (this has 6 mins) if this gives a problem ill change it.
+                extra_time = (26 - flints_filled * 4) * 60 
+                self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time)
         else:
             if str(call) in ['reset', 'r']:
                 return
             elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']:
                 core = str(call)
                 core = get_core_name(core.lower())
-                self.worlds[world] = (core, time.time(), time.time())
+                extra_time = 26 * 60 # default time till rescout on a 0/6 world
+                self.worlds[world] = (core, time.time(), time.time() + extra_time)
         # else. check for cres/sword/juna/seren/aagi/reset etc
         await self.relay(message.channel)
 
@@ -112,7 +125,9 @@ class Analyzer:
                 await self.client.delete_message(self.table_messages[channel])
             else:
                 await self.client.edit_message(msg, relay_message)
-        self.table_messages[channel] = await self.client.send_message(channel, relay_message)
+        
+        if str(channel.type) != "private":
+            self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
     def get_table(self):
         active_list = [(k, v) for k, v in self.worlds.items() if (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
@@ -146,31 +161,46 @@ class Analyzer:
 
         return "```" + table + "```"
 
-    # command = ?req *amount
-    # optional parameter amount can range from 1 to 20
+    # command = ?scout *amount
+    # optional parameter amount can range from 1 to 10
     # tell s the user to scout a list of worlds
-    async def get_scout_info(self, channel, username, args):
+    async def get_scout_info(self, channel, username, author, args):
+        print(args)
+        if author in self.scouts:
+            if len(self.scouts[author]["worlds"]) > 0:
+                if self.scouts[author]["time"] > time.time():
+                    await self.client.send_message(author, "you still need to scout {}".format(self.scouts[author]["worlds"]))
+                    return   
+        else:
+            self.scouts[author] = {}
+            extra_time = 15 * 60
+            self.scouts[author]["time"] = time.time() + extra_time
+        
         amount = 10
         if len(args) >= 1:
             if args[0].isdigit():
-                amount = max(1, min(20, int(args[0])))
-        worlds = [k for k, v in self.worlds.items() if time.time() - v[1] > 30*60 and time.time() - v[2] > 15*60]
-        if len(worlds) > 1:
-            if amount > len(worlds):
-                amount = len(worlds)
+                amount = max(1, min(10, int(args[0])))
+        all_worlds = [k for k, v in self.worlds.items() if time.time() - v[2] > 0]
+        if len(all_worlds) > 1:
+            if amount > len(all_worlds):
+                amount = len(all_worlds)
                 i = 0
             else:
-                i = random.randint(0, len(worlds)-amount)
-            result = worlds[i:i+amount]
+                i = random.randint(0, len(all_worlds)-amount)
+            result = all_worlds[i:i+amount]
+            worlds = all_worlds[i:i+amount]
             for j in range(i, i + amount):
-                world = self.worlds[worlds[j]] 
-                self.worlds[worlds[j]] = [world[0], world[1], time.time()]
+                world = self.worlds[all_worlds[j]]
+                extra_time = 15 * 60
+                self.worlds[all_worlds[j]] = [world[0], world[1], time.time() + extra_time]
                 
             response = "error getting worlds"
             if len(result) == 1:
                 response = "{}, please scout world {}".format(username, result[0])
             elif len(result) >= 2:
-                response = "{}, please scout {}".format(username, result)
+                response = "{}, please scout the following wolrds {}".format(username, result)
+            self.scouts[author]["worlds"] = worlds
+            await self.client.send_message(author, response)
             await self.client.send_message(channel, response)
         
     def reset(self):

@@ -23,7 +23,8 @@ async def req(ctx, *args):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         username = ctx.message.author.name
-        await analyzer.get_scout_info(channel, username, args)
+        author = ctx.message.author
+        await analyzer.get_scout_info(channel, username, author, args)
 
 
 @client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)
@@ -158,7 +159,13 @@ async def on_message(message):
         sys.exit(0)
 
     print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
+
     # Check if we are in the right channel
+
+    if str(message.channel.type) == "private":
+        await analyzer.analyze_call(message)
+        return
+    
     if message.channel.name not in settings.channels:
         return
 
