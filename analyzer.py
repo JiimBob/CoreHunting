@@ -98,14 +98,14 @@ class Analyzer:
             for to_be_scouted in self.scouts[scout]["worlds"]:
                 if to_be_scouted == world:
                     self.scouts[scout]["worlds"].remove(world)
-        
+
         if call.isdigit():
             flints_filled = int(call)
             if 0 <= flints_filled <= 6:
                 # rescout worlds with more cores faster to stay on top of what is next
                 # extra time till rescout is 26 mins -4 min for each plinth
                 # for now this also includes 5/6 (this has 6 mins) if this gives a problem ill change it.
-                extra_time = (26 - flints_filled * 4) * 60 
+                extra_time = (26 - flints_filled * 4) * 60
                 self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time)
         else:
             if str(call) in ['reset', 'r']:
@@ -117,6 +117,7 @@ class Analyzer:
                 self.worlds[world] = (core, time.time(), time.time() + extra_time)
         # else. check for cres/sword/juna/seren/aagi/reset etc
         await self.relay(message.channel)
+        print(self.worlds)
 
     async def relay(self, channel):
         relay_message = self.get_table()
@@ -131,7 +132,7 @@ class Analyzer:
 
     def get_table(self):
         active_list = [(k, v) for k, v in self.worlds.items() if (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
-        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60*10]
+        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 60]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
