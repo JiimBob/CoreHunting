@@ -100,8 +100,8 @@ async def commands():
 
 @client.command(name='info', help='Lists FC info.', pass_context=True)
 async def info(ctx):
-    channel = ctx.message.channel.name
-    if channel == 'bots' or channel == 'bottom-secret':
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
         await client.say("This will say FC info! Eventually.")
     else:
         pass
@@ -109,15 +109,15 @@ async def info(ctx):
 
 @client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
 async def ranks(ctx):
-    channel = ctx.message.channel.name
-    if channel == 'bots' or channel == 'bottom-secret':
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
         await client.say("```"
                          "Blue Raivyn  - General\n"
                          "Sscared      - General\n"
                          "Wokkafumpe   - General\n"
                          "Bomy         - General\n"
                          "Insulate     - General\n"
-                         "WealthRS     - Captain\n"
+                         "WealthRS     - ★ Captain\n"
                          "DTP          - Captain\n"
                          "Pur          - Captain\n"
                          "Z oD         - Captain\n"
