@@ -109,3 +109,4 @@ venv.bak/
 # authorizations
 auth.json
 saved_worlds.json
+settings.json
