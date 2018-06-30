@@ -11,7 +11,8 @@ def parse_line(line):
     line = re.sub("(?<=[a-z])(?=\\d)|(?<=\\d)(?=[a-z])|\\.", " ", line)
     line = re.sub("^(world|w)", "", line)
     line = line.replace("  ", " ")
-    line = re.sub("(dead|gone|d)", "0", line)
+    line = re.sub("(sword|edict)$", "sw", line)
+    line = re.sub("(dead|gone|d)$", "0", line)
     return line
 
 
