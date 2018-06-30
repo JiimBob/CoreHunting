@@ -23,7 +23,8 @@ async def req(ctx, *args):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         username = ctx.message.author.name
-        await analyzer.get_scout_info(channel, username, args)
+        author = ctx.message.author
+        await analyzer.get_scout_info(channel, username, author, args)
 
 
 @client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)
@@ -81,28 +82,26 @@ async def ping(ctx):
 @client.command(name='commands', help='Lists commands for calling/scouting.')
 async def commands():
     await client.say("To add a world to queue: `w[#] [number of plinths]`.\n"
-                     "Example: `w59 4` or `14 2.`\n"
-                     "**Note:** Only works in #calls channel.\n\n"
+                     "Example: `w59 4` or `14 2.`\n\n"
                      "To declare a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
                      "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', "
-                     "'seren', 'se', 'aagi', 'a']`.\n "
-                     "**Note:** Only works in #calls channel.\n\n"
+                     "'seren', 'se', 'aagi', 'a']`.\n\n"
                      "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
-                     "Example: `w103 d` or `56 0`\n"
-                     "**Note:** Only works in #calls channel.\n\n"
+                     "Example: `w103 d` or `56 0`\n\n"
                      "To get a list of current ranks in the friends chat: `?ranks`.\n"
-                     "Example: `?ranks`\n"
-                     "**Note:** Only works in #bots channel.\n\n"
+                     "Example: `?ranks`\n\n"
                      "To get information about the friends chat: `?info`\n"
-                     "Example: `?info`\n"
-                     "**Note:** Only works in #bots channel.\n\n")
+                     "Example: `?info`\n\n"
+                     "To get recommended words to scout: `?req` or `?req [#]`.\n"
+                     "The # is the amount of worlds you are requesting to scout.\n"
+                     "Example: `?req` or `?req 4`\n\n")
 
 
 @client.command(name='info', help='Lists FC info.', pass_context=True)
 async def info(ctx):
-    channel = ctx.message.channel.name
-    if channel == 'bots' or channel == 'bottom-secret':
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
         await client.say("This will say FC info! Eventually.")
     else:
         pass
@@ -110,15 +109,15 @@ async def info(ctx):
 
 @client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
 async def ranks(ctx):
-    channel = ctx.message.channel.name
-    if channel == 'bots' or channel == 'bottom-secret':
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
         await client.say("```"
                          "Blue Raivyn  - General\n"
                          "Sscared      - General\n"
                          "Wokkafumpe   - General\n"
                          "Bomy         - General\n"
                          "Insulate     - General\n"
-                         "WealthRS     - Captain\n"
+                         "WealthRS     - ★ Captain\n"
                          "DTP          - Captain\n"
                          "Pur          - Captain\n"
                          "Z oD         - Captain\n"
@@ -155,7 +154,13 @@ async def on_message(message):
         sys.exit(0)
 
     print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
+
     # Check if we are in the right channel
+
+    if str(message.channel.type) == "private":
+        await analyzer.analyze_call(message)
+        return
+    
     if message.channel.name not in settings.channels:
         return
 
