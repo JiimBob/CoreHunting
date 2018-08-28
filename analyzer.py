@@ -142,7 +142,7 @@ class Analyzer:
         await self.relay(message.channel)
 
     async def relay(self, channel):
-        relay_message = self.get_table()
+        relay_message = self.get_table(True)
         for ch, msg in self.table_messages.items():
             if ch == channel:
                 await self.client.delete_message(self.table_messages[channel])
@@ -152,16 +152,16 @@ class Analyzer:
         if str(channel.type) != "private":
             self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
-    def get_table(self):
+    def get_table(self, trim):
         active_list = [(k, v) for k, v in self.worlds.items() if
                        (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
         next_list = [(k, v) for k, v in self.worlds.items() if
                      isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 60]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
-        next_list_s = next_list_s[:10]
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
-
-        n = min(max(len(next_list_s), len(active_list_s), 1), 10)
+        n = max(len(next_list_s), len(active_list_s), 1)
+        if trim:
+            n = min(n, 10)
         table = "|   Active   |      Next      |\n"
         table += "-" * (3 + 12 + 16) + "\n"
         for i in range(n):

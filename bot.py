@@ -42,6 +42,13 @@ async def relay(ctx):
         await analyzer.relay(channel)
 
 
+@client.command(name='worldlist', help="Prints full world list", pass_context=True)
+async def worldlist(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        await client.send_message(channel, analyzer.get_table(False))
+
+
 @client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.'
                 ' Works only with Staff rank.', aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'],
                 pass_context=True)
