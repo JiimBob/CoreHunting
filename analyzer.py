@@ -17,6 +17,7 @@ def parse_line(line):
 
 
 _save_file = "saved_worlds.json"
+_save_stats = "saved_stats.json"
 _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 35, 36, 37, 39, 40,
                42, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
                73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114, 115,
@@ -66,19 +67,25 @@ def _json_keys_to_str(x):
     return x
 
 
+def _json_keys_to_dict(x):
+    if isinstance(x, dict):
+        return {str(k): v for k, v in x.items()}
+    return x
+
+
 class Analyzer:
 
     def __init__(self, client):
         self.worlds = {}
+        self.scouts = {}  # current scouts with their assigned worlds
         self.load()
         self.client = client
         self.table_messages = {}  # dict of tables with messages of the table
-        self.scouts = {} # current scouts with their assigned worlds
 
     async def analyze_call(self, message):
-        #first split on comma/slash/|
+        # first split on comma/slash/|
         calls = re.split("\\\|\||,|/", message.content)
-        #then loop over it
+        # then loop over it
         for c in calls:
             parsed = parse_line(c)
             split = parsed.split()
@@ -93,13 +100,14 @@ class Analyzer:
             world = int(world)
             if world in _special_worlds:
                 if str(message.channel.type) != "private":
-                    await self.client.send_message(message.channel, "NOTE, w{} is a {}.".format(world, _special_worlds[world]))
+                    await self.client.send_message(message.channel,
+                                                   f"NOTE, w{world} is a {_special_worlds[world]}.")
 
             if world not in self.worlds:
-                await self.client.send_message(message.channel, "{} is not a p2p english world".format(world))
+                await self.client.send_message(message.channel, f"{world} is not a p2p english world")
                 return
 
-            #clear worlds from scouts
+            # clear worlds from scouts
             for scout in self.scouts:
                 for to_be_scouted in self.scouts[scout]["worlds"]:
                     if to_be_scouted == world:
@@ -113,15 +121,24 @@ class Analyzer:
                     # for now this also includes 5/6 (this has 6 mins) if this gives a problem ill change it.
                     extra_time = (26 - flints_filled * 4) * 60
                     self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time)
+                    id = message.author.id
+                    self.check_make_scout(id, message.author.name)
+                    # self.scouts[id]["stats"][str(flints_filled) + "/6 calls"] += 1
+                    self.scouts[id]["calls"] += 1
             else:
                 if str(call) in ['reset', 'r']:
                     return
                 elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a', 'e']:
                     core = str(call)
                     core = get_core_name(core.lower())
-                    extra_time = 26 * 60 # default time till rescout on a 0/6 world
+                    extra_time = 26 * 60  # default time till rescout on a 0/6 world
                     self.worlds[world] = (core, time.time(), time.time() + extra_time)
+                    id = message.author.id
+                    self.check_make_scout(id, message.author.name)
+                    self.scouts[id]["calls"] += 1
             # else. check for cres/sword/juna/seren/aagi/reset etc
+            self.saves()
+            self.savew()
         await self.relay(message.channel)
 
     async def relay(self, channel):
@@ -131,18 +148,20 @@ class Analyzer:
                 await self.client.delete_message(self.table_messages[channel])
             else:
                 await self.client.edit_message(msg, relay_message)
-        
+
         if str(channel.type) != "private":
             self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
     def get_table(self):
-        active_list = [(k, v) for k, v in self.worlds.items() if (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
-        next_list = [(k, v) for k, v in self.worlds.items() if isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 60]
+        active_list = [(k, v) for k, v in self.worlds.items() if
+                       (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
+        next_list = [(k, v) for k, v in self.worlds.items() if
+                     isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 60]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
         next_list_s = next_list_s[:10]
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
 
-        n = max(len(next_list_s), len(active_list_s), 1)
+        n = min(max(len(next_list_s), len(active_list_s), 1), 10)
         table = "|   Active   |      Next      |\n"
         table += "-" * (3 + 12 + 16) + "\n"
         for i in range(n):
@@ -168,21 +187,53 @@ class Analyzer:
 
         return "```" + table + "```"
 
+    async def stats(self, channel, *id):
+        if len(id) >= 1 and len(id[0]) >= 1:
+            if len(id[0][0]) > 3:
+                if id[0][0][2] == "!":
+                    id = id[0][0][3:-1]
+                else:
+                    id = id[0][0][2:-1]
+        if id in self.scouts:
+            response = "these are all the stats of " + self.scouts[id]["name"] + ": \n"
+            for stat in self.scouts[id]:
+                response += stat + ": " + str(self.scouts[id][stat]) + " "
+        else:
+            response = "these are all the stats of all the scouts:"
+            for id in self.scouts:
+                response += "\n" + self.scouts[id]["name"]
+                for stat in self.scouts[id]:
+                    response += " " + stat + ": " + str(self.scouts[id][stat])
+        await self.client.send_message(channel, response)
+        # make stats for scout mainly
+
+    # checks all field that a scout can use and makes them if not existent
+    # add new stats on this list
+    def check_make_scout(self, scout, name):
+        if scout not in self.scouts:
+            self.scouts[str(scout)] = {}
+        if "name" not in self.scouts[scout]:
+            self.scouts[scout]["name"] = name
+        if "calls" not in self.scouts[scout]:
+            self.scouts[scout]["calls"] = 0
+        if "scouts" not in self.scouts[scout]:
+            self.scouts[scout]["scouts"] = 0
+        if "worlds" not in self.scouts[scout]:
+            self.scouts[scout]["worlds"] = []
+
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
     # tell s the user to scout a list of worlds
-    async def get_scout_info(self, channel, username, author, args):
-        print(args)
-        if author in self.scouts:
-            if len(self.scouts[author]["worlds"]) > 0:
-                if self.scouts[author]["time"] > time.time():
-                    await self.client.send_message(author, "you still need to scout {}".format(self.scouts[author]["worlds"]))
-                    return   
+    async def get_scout_info(self, channel, username, scout, args):
+        id = scout.id
+        if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
+            await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']}")
+            await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']}")
+            return
         else:
-            self.scouts[author] = {}
-            extra_time = 15 * 60
-            self.scouts[author]["time"] = time.time() + extra_time
-        
+            self.check_make_scout(id, username)
+            self.scouts[id]["scouts"] += 1
+
         amount = 10
         if len(args) >= 1:
             if args[0].isdigit():
@@ -193,9 +244,9 @@ class Analyzer:
                 amount = len(all_worlds)
                 i = 0
             else:
-                i = random.randint(0, len(all_worlds)-amount)
-            result = all_worlds[i:i+amount]
-            worlds = all_worlds[i:i+amount]
+                i = random.randint(0, len(all_worlds) - amount)
+            result = all_worlds[i:i + amount]
+            worlds = all_worlds[i:i + amount]
             for j in range(i, i + amount):
                 world = self.worlds[all_worlds[j]]
                 extra_time = 15 * 60
@@ -203,23 +254,31 @@ class Analyzer:
 
             response = "error getting worlds"
             if len(result) == 1:
-                response = "{}, please scout world {}".format(username, result[0])
+                response = f"{username}, please scout world {result[0]}"
             elif len(result) >= 2:
-                response = "{}, please scout the following wolrds {}".format(username, result)
-            self.scouts[author]["worlds"] = worlds
-            await self.client.send_message(author, response)
+                response = f"{username}, please scout the following worlds {result}"
+            self.scouts[id]["worlds"] = worlds
+            self.saves()
+            await self.client.send_message(scout, response)
             await self.client.send_message(channel, response)
 
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 
-    def save(self):
+    def savew(self):
         with open(_save_file, 'w') as f:
             json.dump(self.worlds, f, indent=2)
+
+    def saves(self):
+        with open(_save_stats, 'w') as f:
+            json.dump(self.scouts, f, indent=2)
 
     def load(self):
         if os.path.isfile(_save_file):
             with open(_save_file, 'r') as f:
                 self.worlds = json.load(f, object_hook=_json_keys_to_str)
+        if os.path.isfile(_save_stats):
+            with open(_save_stats, 'r') as f:
+                self.scouts = json.load(f)
         else:
             self.reset()

@@ -18,8 +18,16 @@ auth_file = 'auth.json'
 settings = Settings()
 
 
-@client.command(name='req', help='Request a range of worlds to scout.', aliases=['request', 'scout'], pass_context=True)
-async def req(ctx, *args):
+@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
+                aliases=['highscores'], pass_context=True)
+async def stats(ctx, *id):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        await analyzer.stats(channel, id)
+
+
+@client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
+async def scout(ctx, *args):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         username = ctx.message.author.name
@@ -34,8 +42,9 @@ async def relay(ctx):
         await analyzer.relay(channel)
 
 
-@client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.',
-                aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'], pass_context=True)
+@client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.'
+                ' Works only with Staff rank.', aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'],
+                pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def reset(ctx):
     channel = ctx.message.channel
@@ -58,7 +67,7 @@ async def reset(ctx):
     ]
     if channel.name in settings.channels:
         analyzer.reset()
-        response = "World data has been {}.".format(random.choice(possible_replies))
+        response = f"World data has been {random.choice(possible_replies)}."
         await client.send_message(channel, response)
         await analyzer.relay(channel)
 
@@ -67,7 +76,8 @@ async def reset(ctx):
 @commands.has_any_role(*settings.ranks)
 async def stop(ctx):
     print("Attempting to stop")
-    analyzer.save()
+    analyzer.saves()
+    analyzer.savew()
     await client.logout()
     exit(0)
 
@@ -76,7 +86,7 @@ async def stop(ctx):
 async def ping(ctx):
     d = datetime.utcnow() - ctx.message.timestamp
     s = d.seconds * 1000 + d.microseconds // 1000
-    await client.send_message(ctx.message.channel, "Pong: {}ms".format(s))
+    await client.send_message(ctx.message.channel, f"Pong: {s}ms")
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
@@ -85,7 +95,7 @@ async def commands():
                      "Example: `w59 4` or `14 2.`\n\n"
                      "To declare a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
-                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', "
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'e', 'sw', 'juna', 'j', "
                      "'seren', 'se', 'aagi', 'a']`.\n\n"
                      "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
                      "Example: `w103 d` or `56 0`\n\n"
@@ -93,9 +103,8 @@ async def commands():
                      "Example: `?ranks`\n\n"
                      "To get information about the friends chat: `?info`\n"
                      "Example: `?info`\n\n"
-                     "To get recommended words to scout: `?req` or `?req [#]`.\n"
-                     "The # is the amount of worlds you are requesting to scout.\n"
-                     "Example: `?req` or `?req 4`\n\n")
+                     "To get a list of worlds to scout: `?scout [optional amount]`.\n"
+                     "Example: `?scout` or `?scout 5`.\n\n")
 
 
 @client.command(name='info', help='Lists FC info.', pass_context=True)
@@ -134,7 +143,6 @@ async def on_ready():
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
-
     server = [x for x in client.servers if x.name == settings.servers[0]][0]
     bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
     await analyzer.relay(bot_only_channel)
@@ -153,7 +161,7 @@ async def on_message(message):
         await client.logout()
         sys.exit(0)
 
-    print("Received message {} in channel {} from {}".format(message.content, message.channel, message.author.name))
+    print(f"Received message {message.content} in channel {message.channel} from {message.author.name}")
 
     # Check if we are in the right channel
 
@@ -175,7 +183,7 @@ async def on_message(message):
 
 @client.event
 async def on_command_error(ctx, error):
-    print("Rip, error {}, {}".format(ctx, error))
+    print(f"Rip, error {ctx}, {error}")
 
 
 if not os.path.exists(auth_file):
@@ -183,4 +191,5 @@ if not os.path.exists(auth_file):
 
 with open(auth_file) as f:
     auth_data = json.load(f)
+
 client.run(auth_data['token'])
