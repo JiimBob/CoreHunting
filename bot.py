@@ -14,7 +14,7 @@ BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
 auth_file = 'auth.json'
-
+non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 settings = Settings()
 
 
@@ -168,7 +168,7 @@ async def on_message(message):
         await client.logout()
         sys.exit(0)
 
-    print(f"Received message {message.content} in channel {message.channel} from {message.author.name}")
+    print(f"Received message {message.content} in channel {message.channel} from {message.author.name}".translate(non_bmp_map))
 
     # Check if we are in the right channel
 
@@ -199,4 +199,4 @@ if not os.path.exists(auth_file):
 with open(auth_file) as f:
     auth_data = json.load(f)
 
-client.run(auth_data['token'])
+client.run(auth_data['token2'])
