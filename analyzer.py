@@ -116,7 +116,6 @@ class Analyzer:
 
             if call.isdigit():
                 flints_filled = int(call)
-                print(self.worlds[world])
 
                 if 0 <= flints_filled <= 6:
                     # rescout worlds with more cores faster to stay on top of what is next
@@ -127,7 +126,7 @@ class Analyzer:
                     id = message.author.id
                     self.check_make_scout(id, message.author.name)
                     # self.scouts[id]["stats"][str(flints_filled) + "/6 calls"] += 1
-                    self.scouts[id]["calls"] += 1
+                    self.scouts[id]["scouts"] += 1
             else:
                 if str(call) in ['reset', 'r']:
                     return
@@ -204,7 +203,7 @@ class Analyzer:
         else:
             response = "these are all the stats of all the scouts:"
             for id in self.scouts:
-                response += "\n" + self.scouts[id]["name"]
+                response += "\n"
                 for stat in self.scouts[id]:
                     response += " " + stat + ": " + str(self.scouts[id][stat])
         await self.client.send_message(channel, response)
@@ -221,8 +220,24 @@ class Analyzer:
             self.scouts[scout]["calls"] = 0
         if "scouts" not in self.scouts[scout]:
             self.scouts[scout]["scouts"] = 0
+        if "scout_requests" not in self.scouts[scout]:
+            self.scouts[scout]["scout_requests"] = 0
         if "worlds" not in self.scouts[scout]:
             self.scouts[scout]["worlds"] = []
+        if "bot_mute" not in self.scouts[scout]:
+            self.scouts[scout]["bot_mute"] = 0
+
+    async def set_mute(self, channel, scout, name, value):
+        self.check_make_scout(scout.id, name)
+        self.scouts[scout.id]["bot_mute"] = value
+        await self.client.send_message(channel, f"{name} changed bot_mute")
+        self.saves()
+
+    async def reset_scout(self, channel, scout, name):
+        self.check_make_scout(scout.id, name)
+        self.scouts[scout.id]["worlds"] = []
+        await self.client.send_message(channel, f"{name} deleted his scout list")
+        
 
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
@@ -230,12 +245,13 @@ class Analyzer:
     async def get_scout_info(self, channel, username, scout, args):
         id = scout.id
         if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
-            await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']}")
-            await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']}")
+            if self.scouts[id]["bot_mute"] == 0:
+                await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
+            await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
             return
         else:
             self.check_make_scout(id, username)
-            self.scouts[id]["scouts"] += 1
+            self.scouts[id]["scout_requests"] += 1
 
         amount = 10
         if len(args) >= 1:
@@ -262,7 +278,8 @@ class Analyzer:
                 response = f"{username}, please scout the following worlds {result}"
             self.scouts[id]["worlds"] = worlds
             self.saves()
-            await self.client.send_message(scout, response)
+            if self.scouts[id]["bot_mute"] == 0:
+                await self.client.send_message(scout, response)
             await self.client.send_message(channel, response)
 
     def reset(self):

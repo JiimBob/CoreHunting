@@ -18,12 +18,38 @@ non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 settings = Settings()
 
 
-@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
-                aliases=['highscores'], pass_context=True)
+@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats", aliases=['highscores'], pass_context=True)
 async def stats(ctx, *id):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.stats(channel, id)
+
+
+@client.command(name='resetscout', help="deletes your asigned scout list", aliases=['rs'], pass_context=True)
+async def resetscout(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        author = ctx.message.author
+        username = author.name
+        await analyzer.reset_scout(channel, author, username)
+        
+
+@client.command(name='mute', help="mutes the pms from the bot", aliases=['zipit', 'stfu'], pass_context=True)
+async def mute(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        author = ctx.message.author
+        username = author.name
+        await analyzer.set_mute(channel, author, username, 1)
+
+
+@client.command(name='unmute', help="unmutes the pms from the bot", aliases=['unzup'], pass_context=True)
+async def unmute(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        author = ctx.message.author
+        username = author.name
+        await analyzer.set_mute(channel, author, username, 0) 
 
 
 @client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
@@ -98,20 +124,22 @@ async def ping(ctx):
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
 async def commands():
-    await client.say("To add a world to queue: `w[#] [number of plinths]`.\n"
-                     "Example: `w59 4` or `14 2.`\n\n"
-                     "To declare a core: `w[#] [core name]`.\n"
+    await client.say("To report on a world: `w[#] [number of active plinths]`.\n"
+                     "Example: `w59 4` or `14 2`\n\n"
+                     "To call a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
-                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'e', 'sw', 'juna', 'j', "
-                     "'seren', 'se', 'aagi', 'a']`.\n\n"
-                     "To delete a world from queue: `w[#] [0, d, dead, or gone]`.\n"
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'e', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n\n"
+                     "To delete a world: `w[#] [0, d, dead, or gone]`.\n"
                      "Example: `w103 d` or `56 0`\n\n"
-                     "To get a list of current ranks in the friends chat: `?ranks`.\n"
-                     "Example: `?ranks`\n\n"
-                     "To get information about the friends chat: `?info`\n"
-                     "Example: `?info`\n\n"
-                     "To get a list of worlds to scout: `?scout [optional amount]`.\n"
-                     "Example: `?scout` or `?scout 5`.\n\n")
+                     "To get a list of worlds to scout: `?scout [optional amount]`. \n"
+                     "Example: `?scout` for a default of 10 worlds or `?scout 5` for 5 worlds.\n"
+                     "If you dont want/can to complete the list use `?resetscout`.\n"
+                     "If you can't do a world just report it to be 0, or ask someone else to do it for you\n"
+                     "To disable the bot pming your list of worlds: `?mute`\n"
+                     "To enable the bot pming your list of worlds: `?unmute`\n\n"
+                     "You can report the worlds in pm to the bot if you want.\n\n"
+                     "The next column will display a max of 10 worlds sorted by active plints.\n"
+                     "To get the full list: `?worldlist`")
 
 
 @client.command(name='info', help='Lists FC info.', pass_context=True)
