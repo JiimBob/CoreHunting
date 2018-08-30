@@ -98,6 +98,7 @@ class Analyzer:
                 return
 
             world = int(world)
+
             if world in _special_worlds:
                 if str(message.channel.type) != "private":
                     await self.client.send_message(message.channel,
@@ -115,6 +116,10 @@ class Analyzer:
 
             if call.isdigit():
                 flints_filled = int(call)
+                print(self.worlds[world])
+                if self.worlds[world][0] == flints_filled:
+                    await self.relay(message.channel)
+                    return
                 if 0 <= flints_filled <= 6:
                     # rescout worlds with more cores faster to stay on top of what is next
                     # extra time till rescout is 26 mins -4 min for each plinth
