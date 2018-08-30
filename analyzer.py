@@ -117,9 +117,7 @@ class Analyzer:
             if call.isdigit():
                 flints_filled = int(call)
                 print(self.worlds[world])
-                if self.worlds[world][0] == flints_filled:
-                    await self.relay(message.channel)
-                    return
+
                 if 0 <= flints_filled <= 6:
                     # rescout worlds with more cores faster to stay on top of what is next
                     # extra time till rescout is 26 mins -4 min for each plinth
@@ -161,8 +159,8 @@ class Analyzer:
         active_list = [(k, v) for k, v in self.worlds.items() if
                        (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
         next_list = [(k, v) for k, v in self.worlds.items() if
-                     isinstance(v[0], int) and 6 > v[0] > 0 and time.time() - v[1] < 60 * 60]
-        next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
+                     isinstance(v[0], int) and 6 > v[0] > 0]
+        next_list_s = sorted(next_list, key=lambda v: (-v[1][0], -v[1][1]))
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
         n = max(len(next_list_s), len(active_list_s), 1)
         if trim:
