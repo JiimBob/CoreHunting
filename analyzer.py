@@ -178,7 +178,10 @@ class Analyzer:
             if i < len(next_list_s):
                 (world, value) = next_list_s[i]
                 age = str(math.floor((time.time() - value[1]) / 60))
-                s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
+                if world in _special_worlds:
+                    s = "*w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
+                else:
+                    s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
                 l = len(s)
                 s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
                 table += s + "|\n"
@@ -187,6 +190,7 @@ class Analyzer:
             else:
                 table += "" + " " * 16 + "|\n"
 
+        table += "*=world has special requirement."
         return "```" + table + "```"
 
     async def stats(self, channel, *id):
@@ -237,7 +241,6 @@ class Analyzer:
         self.check_make_scout(scout.id, name)
         self.scouts[scout.id]["worlds"] = []
         await self.client.send_message(channel, f"{name} deleted his scout list")
-        
 
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
