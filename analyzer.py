@@ -148,7 +148,11 @@ class Analyzer:
         relay_message = self.get_table(True)
         for ch, msg in self.table_messages.items():
             if ch == channel:
-                await self.client.delete_message(self.table_messages[channel])
+                try:
+                    await self.client.delete_message(self.table_messages[channel])
+                except:
+                    print('Errored, passing.')
+                    pass
             else:
                 await self.client.edit_message(msg, relay_message)
 
