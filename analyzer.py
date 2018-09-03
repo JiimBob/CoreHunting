@@ -1,6 +1,7 @@
 import math
 import os
 import re
+import sys
 import time
 import random
 import json
@@ -305,3 +306,11 @@ class Analyzer:
                 self.scouts = json.load(f)
         else:
             self.reset()
+
+    @staticmethod
+    def restart_program():
+        """Restarts the current program.
+        Note: this function does not return. Any cleanup action (like
+        saving data) must be done before calling this function."""
+        python = sys.executable
+        os.execl(python, python, *sys.argv)

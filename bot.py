@@ -151,6 +151,14 @@ async def info(ctx):
         pass
 
 
+@client.command(name='restart', help='Restarts bot.', pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def restart(ctx):
+    analyzer.saves()
+    analyzer.savew()
+    analyzer.restart_program()
+
+
 @client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
 async def ranks(ctx):
     channel = ctx.message.channel
