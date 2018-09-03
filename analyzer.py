@@ -157,7 +157,7 @@ class Analyzer:
 
     def get_table(self, trim):
         active_list = [(k, v) for k, v in self.worlds.items() if
-                       (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 150]
+                       (isinstance(v[0], str) or v[0] == 6) and time.time() - v[1] < 135]
         next_list = [(k, v) for k, v in self.worlds.items() if
                      isinstance(v[0], int) and 6 > v[0] > 0]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))

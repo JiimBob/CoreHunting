@@ -115,6 +115,14 @@ async def stop(ctx):
     exit(0)
 
 
+@client.command(name='restart', help='Restarts bot.', pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def restart(ctx):
+    analyzer.saves()
+    analyzer.savew()
+    analyzer.restart_program()
+
+
 @client.command(name='ping', help='Checks bots ping.', pass_context=True)
 async def ping(ctx):
     d = datetime.utcnow() - ctx.message.timestamp
@@ -149,14 +157,6 @@ async def info(ctx):
         await client.say("This will say FC info! Eventually.")
     else:
         pass
-
-
-@client.command(name='restart', help='Restarts bot.', pass_context=True)
-@commands.has_any_role(*settings.ranks)
-async def restart(ctx):
-    analyzer.saves()
-    analyzer.savew()
-    analyzer.restart_program()
 
 
 @client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
