@@ -26,11 +26,11 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
 
 
 def _get_special_worlds():
-    aus = "Australia/NZ world, bad servers"
+    eoc = "EOC only world, try to avoid"
     legacy = "Legacy only world, try to avoid"
     t1500 = "1500 total world"
-    return {12: aus, 15: aus, 49: aus, 50: aus, 18: legacy, 115: legacy, 137: legacy, 52: "VIP world", 66: "EOC world",
-            96: "Quick chat world, avoid", 48: "2600 total world", 30: "2000 total world", 86: t1500, 114: t1500}
+    return {18: legacy, 115: legacy, 137: legacy, 52: "VIP world", 66: eoc, 106: eoc,
+            96: "Quick chat world, try to avoid", 48: "2600 total world", 30: "2000 total world", 86: t1500, 114: t1500}
 
 
 def _get_special_special_worlds():
@@ -177,6 +177,11 @@ class Analyzer:
             n = min(n, 10)
         table = "|   Active   |      Next      |\n"
         table += "-" * (3 + 12 + 16) + "\n"
+        eoc_b = False
+        legacy_b = False
+        vip_b = False
+        total_b = False
+        qc_b = False
         for i in range(n):
             if i < len(active_list_s):
                 (world, value) = active_list_s[i]
@@ -189,10 +194,23 @@ class Analyzer:
             if i < len(next_list_s):
                 (world, value) = next_list_s[i]
                 age = str(math.floor((time.time() - value[1]) / 60))
+                s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
                 if world in _special_worlds:
-                    s = "*w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
-                else:
-                    s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
+                    if str(_special_worlds[world]).find("total") != -1:
+                        s = "*" + s
+                        total_b = True
+                    elif str(_special_worlds[world]).find("Legacy") != -1:
+                        s = "!" + s
+                        legacy_b = True
+                    elif str(_special_worlds[world]).find("EOC") != -1:
+                        s = "+" + s
+                        eoc_b = True
+                    elif str(_special_worlds[world]).find("VIP") != -1:
+                        s = "#" + s
+                        vip_b = True
+                    elif str(_special_worlds[world].find("Quick") != -1):
+                        s = "~" + s
+                        qc_b = True
                 l = len(s)
                 s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
                 table += s + "|\n"
@@ -200,8 +218,16 @@ class Analyzer:
                 table += " Nil, scout pls" + " " + "|\n"
             else:
                 table += "" + " " * 16 + "|\n"
-
-        table += "*=world has special requirement."
+        if total_b:
+            table += "* = world has total level req.\n"
+        if legacy_b:
+            table += "! = world is legacy only.\n"
+        if eoc_b:
+            table += "+ = world is eoc only.\n"
+        if vip_b:
+            table += "# = world is vip only.\n"
+        if qc_b:
+            table += "~ = world is quick chat only.\n"
         return "```" + table + "```"
 
     async def stats(self, channel, *id):
