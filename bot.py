@@ -19,10 +19,17 @@ settings = Settings()
 
 
 @client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats", aliases=['highscores'], pass_context=True)
-async def stats(ctx, *id):
+async def stats(ctx, arg):
     channel = ctx.message.channel
     if channel.name in settings.channels:
-        await analyzer.stats(channel, id)
+        await analyzer.stats(channel, arg)
+
+
+@client.command(name='lookup', help="can tag someone to get specific stats", aliases=['personal'], pass_context=True)
+async def lookup(ctx, *id):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        await analyzer.lookup(channel, id)
 
 
 @client.command(name='resetscout', help="deletes your asigned scout list", aliases=['rs'], pass_context=True)
@@ -75,11 +82,11 @@ async def worldlist(ctx):
         await client.send_message(channel, analyzer.get_table(False))
 
 
-@client.command(name='reset', help='Refreshes current world data. If you are found abusing, you will be removed.'
-                ' Works only with Staff rank.', aliases=['clear', 'erase', 'empty', 'wipe', 'destroy'],
+@client.command(name='deleteworlddata', help='Refreshes current world data. If you are found abusing, you will be removed.'
+                ' Works only with Staff rank.', aliases=['deleteeverythingrightmeow'],
                 pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def reset(ctx):
+async def deleteworlddata(ctx):
     channel = ctx.message.channel
     possible_replies = [
         'abolished',

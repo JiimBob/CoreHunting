@@ -232,7 +232,27 @@ class Analyzer:
             table += "~ = world is quick chat only.\n"
         return "```" + table + "```"
 
-    async def stats(self, channel, *id):
+    async def stats(self, channel, arg):
+        if isinstance(arg, str):
+            if arg in ["calls", "scouts", "scout_requests"]:
+                sort_type = arg
+                scout_list = sorted(self.scouts.items(), key=lambda x: x[1][sort_type], reverse=True)
+            elif arg in ["name"]:
+                sort_type = arg
+                scout_list = sorted(self.scouts.items(), key=lambda x: x[1][sort_type], reverse=False)
+            else:
+                sort_type = "calls"
+                print(arg)
+        response = "Here are all the stats of all the scouts: \n"
+        for id, scout in scout_list:
+            response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
+                        "Scout Requests: `{scout_requests}`   Current world list: " \
+                        "`{worlds}` \n".format(**self.scouts[id])
+
+        await self.client.send_message(channel, response)
+        # make stats for scout mainly
+
+    async def lookup(self, channel, *id):
         if len(id) >= 1 and len(id[0]) >= 1:
             if len(id[0][0]) > 3:
                 if id[0][0][2] == "!":
@@ -244,14 +264,6 @@ class Analyzer:
             response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
-        else:
-            response = "Here are all the stats of all the scouts: \n"
-            scout_list = sorted(self.scouts.items(), key=lambda x: x[1]["calls"], reverse=True)
-            for id, scout in scout_list:
-                response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
-                            "Scout Requests: `{scout_requests}`   Current world list: " \
-                            "`{worlds}` \n".format(**self.scouts[id])
-
         await self.client.send_message(channel, response)
         # make stats for scout mainly
 
