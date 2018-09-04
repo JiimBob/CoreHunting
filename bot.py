@@ -95,7 +95,7 @@ async def reset(ctx):
         'eradicated',
         'negated',
         'undone',
-        'wiped'
+        'wiped',
         'destroyed'
     ]
     if channel.name in settings.channels:
