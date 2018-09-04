@@ -33,7 +33,13 @@ def _get_special_worlds():
             96: "Quick chat world, avoid", 48: "2600 total world", 30: "2000 total world", 86: t1500, 114: t1500}
 
 
+def _get_special_special_worlds():
+    legacy = "Legacy only world, try to avoid"
+    return {18: legacy, 115: legacy, 137: legacy, 52: "VIP world", 48: "2600 total world"}
+
+
 _special_worlds = _get_special_worlds()
+_special_special_worlds = _get_special_special_worlds()
 
 
 def get_core_name(argument):
@@ -266,6 +272,11 @@ class Analyzer:
             if args[0].isdigit():
                 amount = max(1, min(10, int(args[0])))
         all_worlds = [k for k, v in self.worlds.items() if time.time() - v[2] > 0]
+
+        for world in all_worlds:
+            if world in _special_special_worlds:
+                all_worlds.remove(world)
+
         if len(all_worlds) > 1:
             if amount > len(all_worlds):
                 amount = len(all_worlds)
