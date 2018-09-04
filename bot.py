@@ -189,8 +189,8 @@ async def on_ready():
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
     server = [x for x in client.servers if x.name == settings.servers[0]][0]
-    bot_only_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
-    await analyzer.relay(bot_only_channel)
+    bot_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
+    await client.send_message(bot_channel, "Nobody fear, the bot is here!\n#Ban Ordinoobly")
 
 
 mainMessage = None
