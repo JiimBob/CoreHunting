@@ -165,19 +165,25 @@ async def info(ctx):
 async def ranks(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
-        await client.say("```"
-                         "Blue Raivyn  - General\n"
-                         "Sscared      - General\n"
-                         "Wokkafumpe   - General\n"
-                         "Bomy         - General\n"
-                         "Insulate     - General\n"
-                         "WealthRS     - ★ Captain\n"
-                         "DTP          - Captain\n"
-                         "Pur          - Captain\n"
-                         "Z oD         - Captain\n"
-                         "Legend-ary   - Captain\n"
-                         "HuntrMetroid - Captain"
-                         "```")
+        ranks = {"Blue Raivyn\n",
+                 "Sscared\n",
+                 "Bomy\n",
+                 "Insulate\n",
+                 "DTP\n",
+                 "Pur\n",
+                 "Z oD\n",
+                 "Legend-ary\n",
+                 "HuntrMetroid\n",
+                 "Unicorn Snot\n",
+                 "Leighrose\n",
+                 "Eef Top\n",
+                 "Luna Kitten\n",
+                 "L eon\n"}
+        ranks = sorted(ranks)
+        ranks_str = "★WealthRS★\n"
+        for name in ranks:
+            ranks_str += str(name)
+        await client.say("```" + ranks_str + "```")
     else:
         pass
 
@@ -190,7 +196,7 @@ async def on_ready():
     print('ID: ' + client.user.id)
     server = [x for x in client.servers if x.name == settings.servers[0]][0]
     bot_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
-    await client.send_message(bot_channel, "Nobody fear, the bot is here!\n#Ban Ordinoobly")
+    await client.send_message(bot_channel, "Nobody fear, the bot is here!")
 
 
 mainMessage = None
