@@ -111,6 +111,7 @@ async def stop(ctx):
     print("Attempting to stop")
     analyzer.saves()
     analyzer.savew()
+    await client.send_message(ctx.message.channel, "Stopping....")
     await client.logout()
     exit(0)
 
@@ -120,6 +121,7 @@ async def stop(ctx):
 async def restart(ctx):
     analyzer.saves()
     analyzer.savew()
+    await client.send_message(ctx.message.channel, "Restarting....")
     analyzer.restart_program()
 
 
