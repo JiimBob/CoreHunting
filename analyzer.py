@@ -44,6 +44,8 @@ _special_special_worlds = _get_special_special_worlds()
 
 def get_core_name(argument):
     switcher = {
+        'Party': "Party",
+        'p': "Party",
         'c': "Cres",
         'cres': "Cres",
         'sword': "Sword",
@@ -60,11 +62,12 @@ def get_core_name(argument):
     return switcher.get(argument, "0")
 
 
-MAPPING = {'Cres': 0,
-           'Sword': 1,
-           'Juna': 2,
-           'Seren': 3,
-           'Aagi': 4,
+MAPPING = {'Party': 0,
+           'Cres': 1,
+           'Sword': 2,
+           'Juna': 3,
+           'Seren': 4,
+           'Aagi': 5,
            6: 6}
 
 
@@ -137,7 +140,7 @@ class Analyzer:
             else:
                 if str(call) in ['reset', 'r']:
                     return
-                elif str(call) in ['cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a', 'e']:
+                elif str(call) in ['party', 'p', 'cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a', 'e']:
                     core = str(call)
                     core = get_core_name(core.lower())
                     extra_time = 26 * 60  # default time till rescout on a 0/6 world
@@ -166,8 +169,7 @@ class Analyzer:
             self.table_messages[channel] = await self.client.send_message(channel, relay_message)
 
     def get_table(self, trim):
-        active_list = [(k, v) for k, v in self.worlds.items() if
-                       (isinstance(v[0], str)) and time.time() - v[1] < 135]
+        active_list = [(k, v) for k, v in self.worlds.items() if self.is_ok(v[0], v[1])]
         next_list = [(k, v) for k, v in self.worlds.items() if
                      isinstance(v[0], int) and 7 > v[0] > 0]
         next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
@@ -347,6 +349,18 @@ class Analyzer:
                 self.scouts = json.load(f)
         else:
             self.reset()
+
+    def is_ok(self, v1, v2):
+        if isinstance(v1, str):
+            if v1 != "Party":
+                if time.time() - v2 < 135:
+                    return True
+                else:
+                    return False
+            else:
+                return True
+        else:
+            return False
 
     @staticmethod
     def restart_program():
