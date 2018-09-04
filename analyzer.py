@@ -240,15 +240,18 @@ class Analyzer:
                 else:
                     id = id[0][0][2:-1]
         if id in self.scouts:
-            response = "these are all the stats of " + self.scouts[id]["name"] + ": \n"
-            for stat in self.scouts[id]:
-                response += stat + ": " + str(self.scouts[id][stat]) + " "
+            response = "These are all the stats of " + self.scouts[id]["name"] + ": \n"
+            response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
+                        "Scout Requests: `{scout_requests}`   Current world list: " \
+                        "`{worlds}` \n".format(**self.scouts[id])
         else:
-            response = "these are all the stats of all the scouts:"
-            for id in self.scouts:
-                response += "\n"
-                for stat in self.scouts[id]:
-                    response += " " + stat + ": " + str(self.scouts[id][stat])
+            response = "Here are all the stats of all the scouts: \n"
+            scout_list = sorted(self.scouts.items(), key=lambda x: x[1]["calls"], reverse=True)
+            for id, scout in scout_list:
+                response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
+                            "Scout Requests: `{scout_requests}`   Current world list: " \
+                            "`{worlds}` \n".format(**self.scouts[id])
+
         await self.client.send_message(channel, response)
         # make stats for scout mainly
 
