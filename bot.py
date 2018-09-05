@@ -20,7 +20,7 @@ settings = Settings()
 
 @client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats", aliases=['highscores'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def stats(ctx, arg):
+async def stats(ctx, arg="calls"):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.stats(channel, arg)
