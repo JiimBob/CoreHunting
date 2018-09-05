@@ -248,7 +248,8 @@ class Analyzer:
             response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
-        print(len(response))
+        if len(response) > 1999:
+            response = "Response reached max character limit and was removed. Let staff know of this issue."
         await self.client.send_message(channel, response)
         # make stats for scout mainly
 
