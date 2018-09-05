@@ -63,6 +63,10 @@ async def unmute(ctx):
 @client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
 async def scout(ctx, *args):
     channel = ctx.message.channel
+    num_worlds = int(args[0])
+    if num_worlds < 3:
+        await client.send_message(channel, "You must request at least 3 worlds.")
+        return
     if channel.name in settings.channels:
         username = ctx.message.author.name
         author = ctx.message.author
