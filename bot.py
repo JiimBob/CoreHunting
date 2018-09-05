@@ -247,6 +247,10 @@ async def on_message(message):
 @client.event
 async def on_command_error(ctx, error):
     print(f"Rip, error {ctx}, {error}")
+    server = [x for x in client.servers if x.name == settings.servers[0]][0]
+    bot_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
+    if "check functions" in str(ctx):
+        await client.send_message(bot_channel, "You do not have necessary perms for this command.")
 
 
 if not os.path.exists(auth_file):
