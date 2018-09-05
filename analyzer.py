@@ -244,11 +244,11 @@ class Analyzer:
                 sort_type = "calls"
                 print(arg)
         response = "Here are all the stats of all the scouts: \n"
-        for id, scout in scout_list:
+        for id, scout in scout_list[:15]:
             response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
-
+        print(len(response))
         await self.client.send_message(channel, response)
         # make stats for scout mainly
 
