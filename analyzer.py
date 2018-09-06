@@ -241,11 +241,11 @@ class Analyzer:
                 sort_type = arg
                 scout_list = sorted(self.scouts.items(), key=lambda x: x[1][sort_type], reverse=False)
             else:
-                sort_type = "calls"
+                sort_type = "scouts"
                 print(arg)
         response = "Here are all the stats of all the scouts: \n"
         for id, scout in scout_list[:15]:
-            response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
+            response += "{name}:   Scouts: `{scouts}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
         if len(response) > 1999:
@@ -262,7 +262,7 @@ class Analyzer:
                     id = id[0][0][2:-1]
         if id in self.scouts:
             response = "These are all the stats of " + self.scouts[id]["name"] + ": \n"
-            response += "{name}:   Calls: `{calls}`   Scouts: `{scouts}`    " \
+            response += "{name}:   Scouts: `{scouts}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
         await self.client.send_message(channel, response)
