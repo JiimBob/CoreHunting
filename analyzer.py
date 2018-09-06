@@ -304,7 +304,7 @@ class Analyzer:
         id = scout.id
         if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
             if self.scouts[id]["bot_mute"] == 0:
-                await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
+                await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']} use `?resetscout` if you want to stop scouting")
             await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
             return
         else:
