@@ -10,4 +10,3 @@ class Settings:
         self.servers = settings['servers']
         self.ranks = settings['ranks']
         self.bot_only_channel = settings['bot-only-channel']
-
