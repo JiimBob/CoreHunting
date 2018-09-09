@@ -23,6 +23,9 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
                42, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
                73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114, 115,
                116, 117, 119, 123, 124, 134, 137, 138, 139, 140}
+exp_table = {1:0, 2:83, 3:174, 4:276, 5:388, 6:512, 7:650, 8:801, 9:969, 10:1154, 11:1358,
+                 12:1584, 13:1833, 14:2107, 15:2411, 16:2746, 17:3115, 18:3523, 19:3973, 20:4470,
+                 21:5018, 22:5624, 23:6291, 24:7028, 25:7842}
 
 
 def _get_special_worlds():
@@ -40,6 +43,13 @@ def _get_special_special_worlds():
 
 _special_worlds = _get_special_worlds()
 _special_special_worlds = _get_special_special_worlds()
+
+
+def get_scout_level(scouts):
+    print(scouts)
+    for level in exp_table:
+        if exp_table[level] >= scouts:
+            return level - 1
 
 
 def get_core_name(argument):
@@ -137,6 +147,12 @@ class Analyzer:
                     self.check_make_scout(id, message.author.name)
                     # self.scouts[id]["stats"][str(flints_filled) + "/6 calls"] += 1
                     self.scouts[id]["scouts"] += 1
+                    scout_level = get_scout_level(self.scouts[id]["scouts"])
+                    if self.scouts[id]["scout_level"] != scout_level:
+                        self.scouts[id]["scout_level"] = scout_level
+                        await self.client.send_message(message.channel, f"{message.author.name} has leveled up in scouting! {message.author.name} is now level {scout_level} in scouting.")
+                        
+                        
             else:
                 if str(call) in ['reset', 'r']:
                     return
@@ -245,7 +261,8 @@ class Analyzer:
                 print(arg)
         response = "Here are all the stats of all the scouts: \n"
         for id, scout in scout_list[:15]:
-            response += "{name}:   Scouts: `{scouts}`   Calls: `{calls}`    " \
+            self.check_make_scout(id, self.scouts[id]["name"])
+            response += "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
         if len(response) > 1999:
@@ -279,12 +296,15 @@ class Analyzer:
             self.scouts[scout]["calls"] = 0
         if "scouts" not in self.scouts[scout]:
             self.scouts[scout]["scouts"] = 0
+        if "scout_level" not in self.scouts[scout]:
+            self.scouts[scout]["scout_level"] = 1
         if "scout_requests" not in self.scouts[scout]:
             self.scouts[scout]["scout_requests"] = 0
         if "worlds" not in self.scouts[scout]:
             self.scouts[scout]["worlds"] = []
         if "bot_mute" not in self.scouts[scout]:
             self.scouts[scout]["bot_mute"] = 0
+            
 
     async def set_mute(self, channel, scout, name, value):
         self.check_make_scout(scout.id, name)
