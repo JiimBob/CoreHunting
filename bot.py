@@ -39,7 +39,7 @@ async def resetscout(ctx):
     if channel.name in settings.channels:
         author = ctx.message.author
         username = author.name
-        await analyzer.reset_scout(channel, author, username)
+        await analyzer.reset_scout(channel, author.id, username)
         
 
 @client.command(name='mute', help="mutes the pms from the bot", aliases=['zipit', 'stfu'], pass_context=True)
@@ -48,7 +48,7 @@ async def mute(ctx):
     if channel.name in settings.channels:
         author = ctx.message.author
         username = author.name
-        await analyzer.set_mute(channel, author, username, 1)
+        await analyzer.set_mute(channel, author.id, username, 1)
 
 
 @client.command(name='unmute', help="unmutes the pms from the bot", aliases=['unzup'], pass_context=True)
@@ -57,7 +57,14 @@ async def unmute(ctx):
     if channel.name in settings.channels:
         author = ctx.message.author
         username = author.name
-        await analyzer.set_mute(channel, author, username, 0) 
+        await analyzer.set_mute(channel, author.id, username, 0)
+        
+
+@client.command(name='updatescoutstats', help="fixes issues with unset scout fields", pass_context=True)
+async def updatescoutstats(ctx):
+    channel = ctx.message.channel
+    if channel.name in settings.channels:
+        await analyzer.update_scout_stats() 
 
 
 @client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
@@ -71,7 +78,7 @@ async def scout(ctx, *args):
     if channel.name in settings.channels:
         username = ctx.message.author.name
         author = ctx.message.author
-        await analyzer.get_scout_info(channel, username, author, args)
+        await analyzer.get_scout_info(channel, author, username, args)
 
 
 @client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)

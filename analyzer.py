@@ -46,7 +46,6 @@ _special_special_worlds = _get_special_special_worlds()
 
 
 def get_scout_level(scouts):
-    print(scouts)
     for level in exp_table:
         if exp_table[level] >= scouts:
             return level - 1
@@ -248,6 +247,12 @@ class Analyzer:
             table += "~ = world is quick chat only.\n"
         return "```" + table + "```"
 
+    async def update_scout_stats(self):
+        for id in self.scouts:
+            self.check_make_scout(id, self.scouts[id]["name"])
+            self.saves()
+            
+
     async def stats(self, channel, arg):
         if isinstance(arg, str):
             if arg in ["calls", "scouts", "scout_requests"]:
@@ -261,7 +266,6 @@ class Analyzer:
                 print(arg)
         response = "Here are all the stats of all the scouts: \n"
         for id, scout in scout_list[:15]:
-            self.check_make_scout(id, self.scouts[id]["name"])
             response += "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
@@ -278,55 +282,56 @@ class Analyzer:
                 else:
                     id = id[0][0][2:-1]
         if id in self.scouts:
-            response = "These are all the stats of " + self.scouts[id]["name"] + ": \n"
-            response += "{name}:   Scouts: `{scouts}`   Calls: `{calls}`    " \
+            response = "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
-        await self.client.send_message(channel, response)
-        # make stats for scout mainly
+            await self.client.send_message(channel, response)
+        else:
+           await self.client.send_message(channel, "No stats available for this user.") 
 
+    # make stats for scout mainly
     # checks all field that a scout can use and makes them if not existent
     # add new stats on this list
-    def check_make_scout(self, scout, name):
-        if scout not in self.scouts:
-            self.scouts[str(scout)] = {}
-        if "name" not in self.scouts[scout]:
-            self.scouts[scout]["name"] = name
-        if "calls" not in self.scouts[scout]:
-            self.scouts[scout]["calls"] = 0
-        if "scouts" not in self.scouts[scout]:
-            self.scouts[scout]["scouts"] = 0
-        if "scout_level" not in self.scouts[scout]:
-            self.scouts[scout]["scout_level"] = 1
-        if "scout_requests" not in self.scouts[scout]:
-            self.scouts[scout]["scout_requests"] = 0
-        if "worlds" not in self.scouts[scout]:
-            self.scouts[scout]["worlds"] = []
-        if "bot_mute" not in self.scouts[scout]:
-            self.scouts[scout]["bot_mute"] = 0
+    def check_make_scout(self, id, name):
+        if id not in self.scouts:
+            self.scouts[str(id)] = {}
+        if "name" not in self.scouts[id]:
+            self.scouts[id]["name"] = name
+        if "calls" not in self.scouts[id]:
+            self.scouts[id]["calls"] = 0
+        if "scouts" not in self.scouts[id]:
+            self.scouts[id]["scouts"] = 0
+        if "scout_level" not in self.scouts[id]:
+            self.scouts[id]["scout_level"] = 1
+        if "scout_requests" not in self.scouts[id]:
+            self.scouts[id]["scout_requests"] = 0
+        if "worlds" not in self.scouts[id]:
+            self.scouts[id]["worlds"] = []
+        if "bot_mute" not in self.scouts[id]:
+            self.scouts[id]["bot_mute"] = 0
             
 
-    async def set_mute(self, channel, scout, name, value):
-        self.check_make_scout(scout.id, name)
-        self.scouts[scout.id]["bot_mute"] = value
+    async def set_mute(self, channel, id, name, value):
+        self.check_make_scout(id, name)
+        self.scouts[id]["bot_mute"] = value
         await self.client.send_message(channel, f"{name} changed bot_mute")
         self.saves()
 
-    async def reset_scout(self, channel, scout, name):
-        self.check_make_scout(scout.id, name)
-        for world in self.scouts[scout.id]["worlds"]:
+    async def reset_scout(self, channel, id, name):
+        self.check_make_scout(id, name)
+        for world in self.scouts[id]["worlds"]:
             previous_call = self.worlds[world][0];
             previous_time = self.worlds[world][1]
             extra_time = (26 - previous_call * 4) * 60
             self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
-        self.scouts[scout.id]["worlds"] = []
+        self.scouts[id]["worlds"] = []
         await self.client.send_message(channel, f"{name} deleted his scout list")
 
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
     # tell s the user to scout a list of worlds
-    async def get_scout_info(self, channel, username, scout, args):
-        id = scout.id
+    async def get_scout_info(self, channel, author, username, args):
+        id = author.id
         if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
             await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
             if self.scouts[id]["bot_mute"] == 0:
@@ -385,11 +390,11 @@ class Analyzer:
         if os.path.isfile(_save_file):
             with open(_save_file, 'r') as f:
                 self.worlds = json.load(f, object_hook=_json_keys_to_str)
+        else:
+            self.reset()
         if os.path.isfile(_save_stats):
             with open(_save_stats, 'r') as f:
                 self.scouts = json.load(f)
-        else:
-            self.reset()
 
     def is_ok(self, v1, v2):
         if isinstance(v1, str):
