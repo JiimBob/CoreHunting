@@ -294,6 +294,11 @@ class Analyzer:
 
     async def reset_scout(self, channel, scout, name):
         self.check_make_scout(scout.id, name)
+        for world in self.scouts[scout.id]["worlds"]:
+            previous_call = self.worlds[world][0];
+            previous_time = self.worlds[world][1]
+            extra_time = (26 - previous_call * 4) * 60
+            self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
         self.scouts[scout.id]["worlds"] = []
         await self.client.send_message(channel, f"{name} deleted his scout list")
 
