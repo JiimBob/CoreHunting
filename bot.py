@@ -61,6 +61,7 @@ async def unmute(ctx):
         
 
 @client.command(name='updatescoutstats', help="fixes issues with unset scout fields", pass_context=True)
+@commands.has_any_role(*settings.ranks)
 async def updatescoutstats(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
