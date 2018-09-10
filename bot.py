@@ -229,10 +229,6 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content == "!stop":
-        await client.logout()
-        sys.exit(0)
-
     print(f"Received message {message.content} in channel {message.channel} from {message.author.name}".translate(non_bmp_map))
 
     # Check if we are in the right channel
