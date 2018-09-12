@@ -23,9 +23,9 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
                42, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
                73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114, 115,
                116, 117, 119, 123, 124, 134, 137, 138, 139, 140}
-exp_table = {0:0, 1:83, 2:174, 3:276, 4:388, 5:512, 6:650, 7:801, 8:969, 9:1154, 10:1358,
-                 11:1584, 12:1833, 13:2107, 14:2411, 15:2746, 16:3115, 17:3523, 18:3973, 19:4470,
-                 20:5018, 21:5624, 22:6291, 23:7028, 24:7842}
+exp_table = {0: 0, 1: 83, 2: 174, 3: 276, 4: 388, 5: 512, 6: 650, 7: 801, 8: 969, 9: 1154, 10: 1358,
+             11: 1584, 12: 1833, 13: 2107, 14: 2411, 15: 2746, 16: 3115, 17: 3523, 18: 3973, 19: 4470,
+             20: 5018, 21: 5624, 22: 6291, 23: 7028, 24: 7842}
 
 
 def _get_special_worlds():
@@ -149,13 +149,15 @@ class Analyzer:
                     scout_level = get_scout_level(self.scouts[id]["scouts"])
                     if self.scouts[id]["scout_level"] != scout_level:
                         self.scouts[id]["scout_level"] = scout_level
-                        await self.client.send_message(message.channel, f"{message.author.name} has leveled up in scouting! {message.author.name} is now level {scout_level} in scouting.")
-                        
-                        
+                        await self.client.send_message(message.channel,
+                                                       f"{message.author.name} has leveled up in scouting! "
+                                                       f"{message.author.name} is now level {scout_level} in scouting.")
+
             else:
                 if str(call) in ['reset', 'r']:
                     return
-                elif str(call) in ['party', 'p', 'cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a', 'e']:
+                elif str(call) in ['party', 'p', 'cres', 'c', 'sword', 'edicts', 'sw', 'juna', 'j', 'seren', 'se',
+                                   'aagi', 'a', 'e']:
                     core = str(call)
                     core = get_core_name(core.lower())
                     extra_time = 26 * 60  # default time till rescout on a 0/6 world
@@ -251,7 +253,6 @@ class Analyzer:
         for id in self.scouts:
             self.check_make_scout(id, self.scouts[id]["name"])
             self.saves()
-            
 
     async def stats(self, channel, arg):
         if isinstance(arg, str):
@@ -283,13 +284,14 @@ class Analyzer:
                     id = id[0][0][2:-1]
         if id in self.scouts:
             response = "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
-                        "Scout Requests: `{scout_requests}`   Current world list: " \
-                        "`{worlds}` \n".format(**self.scouts[id])
+                       "Scout Requests: `{scout_requests}`   Current world list: " \
+                       "`{worlds}` \n".format(**self.scouts[id])
             await self.client.send_message(channel, response)
         else:
-           await self.client.send_message(channel, "No stats available for this user.") 
+            await self.client.send_message(channel, "No stats available for this user.")
 
-    # make stats for scout mainly
+            # make stats for scout mainly
+
     # checks all field that a scout can use and makes them if not existent
     # add new stats on this list
     def check_make_scout(self, id, name):
@@ -309,7 +311,6 @@ class Analyzer:
             self.scouts[id]["worlds"] = []
         if "bot_mute" not in self.scouts[id]:
             self.scouts[id]["bot_mute"] = 0
-            
 
     async def set_mute(self, channel, id, name, value):
         self.check_make_scout(id, name)
@@ -320,9 +321,11 @@ class Analyzer:
     async def reset_scout(self, channel, id, name):
         self.check_make_scout(id, name)
         for world in self.scouts[id]["worlds"]:
-            previous_call = self.worlds[world][0];
+            previous_call = self.worlds[world][0]
             previous_time = self.worlds[world][1]
-            extra_time = (26 - previous_call * 4) * 60
+            print(previous_call, previous_time)
+            if type(previous_call) is int:  # temporary depending on your fix.
+                extra_time = (26 - previous_call * 4) * 60
             self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
         self.scouts[id]["worlds"] = []
         await self.client.send_message(channel, f"{name} deleted his scout list")
@@ -333,9 +336,13 @@ class Analyzer:
     async def get_scout_info(self, channel, author, username, args):
         id = author.id
         if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
-            await self.client.send_message(channel, f"{username}, you still need to scout: {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
+            await self.client.send_message(channel,
+                                           f"{username}, you still need to scout: {self.scouts[id]['worlds']} "
+                                           f"use `?resetscout` if you want to delete your list")
             if self.scouts[id]["bot_mute"] == 0:
-                await self.client.send_message(scout, f"you still need to scout {self.scouts[id]['worlds']} use `?resetscout` if you want to delete your list")
+                await self.client.send_message(author,
+                                               f"you still need to scout {self.scouts[id]['worlds'] } "
+                                               f"use `?resetscout` if you want to delete your list")
             return
         else:
             self.check_make_scout(id, username)
@@ -347,9 +354,7 @@ class Analyzer:
                 amount = max(1, min(10, int(args[0])))
         all_worlds = [k for k, v in self.worlds.items() if time.time() - v[2] > 0]
 
-        for world in all_worlds:
-            if world in _special_special_worlds:
-                all_worlds.remove(world)
+        all_worlds = [world for world in all_worlds if world not in _special_special_worlds]
 
         if len(all_worlds) > 1:
             if amount > len(all_worlds):
@@ -373,7 +378,7 @@ class Analyzer:
             self.saves()
             await self.client.send_message(channel, response)
             if self.scouts[id]["bot_mute"] == 0:
-                await self.client.send_message(scout, response)
+                await self.client.send_message(author, response)
 
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
