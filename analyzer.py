@@ -103,7 +103,7 @@ class Analyzer:
 
     async def analyze_call(self, message):
         # first split on comma/slash/|
-        calls = re.split("\\\|\||,|/", message.content)
+        calls = re.split("[|,/]", message.content)
         # then loop over it
         for c in calls:
             parsed = parse_line(c)
@@ -176,8 +176,8 @@ class Analyzer:
             if ch == channel:
                 try:
                     await self.client.delete_message(self.table_messages[channel])
-                except:
-                    print('Errored, passing.')
+                except Exception as exc:
+                    print('Error, passing. Exception: ' + str(exc))
                     pass
             else:
                 await self.client.edit_message(msg, relay_message)
@@ -205,8 +205,8 @@ class Analyzer:
             if i < len(active_list_s):
                 (world, value) = active_list_s[i]
                 s = "w" + str(world) + "(" + str(value[0]) + ")"
-                l = len(s)
-                s = " " * int(math.ceil(6 - l / 2)) + s + " " * int(math.floor(6 - l / 2))
+                length = len(s)
+                s = " " * int(math.ceil(6 - length / 2)) + s + " " * int(math.floor(6 - length / 2))
                 table += "|" + s + "|"
             else:
                 table += "|" + " " * 12 + "|"
@@ -230,8 +230,8 @@ class Analyzer:
                     elif str(_special_worlds[world].find("Quick") != -1):
                         s = "~" + s
                         qc_b = True
-                l = len(s)
-                s = " " * int(math.ceil(8 - l / 2)) + s + " " * int(math.floor(8 - l / 2))
+                length = len(s)
+                s = " " * int(math.ceil(8 - length / 2)) + s + " " * int(math.floor(8 - length / 2))
                 table += s + "|\n"
             elif i - 2 < len(next_list_s):
                 table += " Nil, scout pls" + " " + "|\n"
@@ -255,6 +255,7 @@ class Analyzer:
             self.saves()
 
     async def stats(self, channel, arg):
+        scout_list = []
         if isinstance(arg, str):
             if arg in ["calls", "scouts", "scout_requests"]:
                 sort_type = arg
@@ -320,6 +321,7 @@ class Analyzer:
 
     async def reset_scout(self, channel, id, name):
         self.check_make_scout(id, name)
+        extra_time = 0
         for world in self.scouts[id]["worlds"]:
             previous_call = self.worlds[world][0]
             previous_time = self.worlds[world][1]
@@ -401,7 +403,8 @@ class Analyzer:
             with open(_save_stats, 'r') as f:
                 self.scouts = json.load(f)
 
-    def is_ok(self, v1, v2):
+    @staticmethod
+    def is_ok(v1, v2):
         if isinstance(v1, str):
             if v1 != "Party":
                 if time.time() - v2 < 135:
