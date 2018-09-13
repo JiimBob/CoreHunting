@@ -19,6 +19,8 @@ def parse_line(line):
 
 _save_file = "saved_worlds.json"
 _save_stats = "saved_stats.json"
+_save_ranks = "ranks.json"
+_save_bans = "bans.json"
 _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 35, 36, 37, 39, 40,
                42, 44, 45, 46, 48, 49, 50, 51, 52, 53, 54, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
                73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114, 115,
@@ -93,10 +95,11 @@ def _json_keys_to_dict(x):
 
 
 class Analyzer:
-
     def __init__(self, client):
         self.worlds = {}
         self.scouts = {}  # current scouts with their assigned worlds
+        self.ranks = {}
+        self.bans = {}
         self.load()
         self.client = client
         self.table_messages = {}  # dict of tables with messages of the table
@@ -393,6 +396,12 @@ class Analyzer:
         with open(_save_stats, 'w') as f:
             json.dump(self.scouts, f, indent=2)
 
+    def saverb(self):
+        with open(_save_ranks, 'w') as f:
+            json.dump(self.scouts, f, indent=2)
+        with open(_save_bans, 'w') as f:
+            json.dump(self.scouts, f, indent=2)
+
     def load(self):
         if os.path.isfile(_save_file):
             with open(_save_file, 'r') as f:
@@ -402,6 +411,12 @@ class Analyzer:
         if os.path.isfile(_save_stats):
             with open(_save_stats, 'r') as f:
                 self.scouts = json.load(f)
+        if os.path.isfile(_save_ranks):
+            with open(_save_ranks, 'r') as f:
+                self.ranks = json.load(f)
+        if os.path.isfile(_save_bans):
+            with open(_save_bans, 'r') as f:
+                self.bans = json.load(f)
 
     @staticmethod
     def is_ok(v1, v2):

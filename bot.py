@@ -18,7 +18,8 @@ non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 settings = Settings()
 
 
-@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats", aliases=['highscores'], pass_context=True)
+@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
+                aliases=['highscores'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def stats(ctx, arg="calls"):
     channel = ctx.message.channel
@@ -40,7 +41,7 @@ async def resetscout(ctx):
         author = ctx.message.author
         username = author.name
         await analyzer.reset_scout(channel, author.id, username)
-        
+
 
 @client.command(name='mute', help="mutes the pms from the bot", aliases=['zipit', 'stfu'], pass_context=True)
 async def mute(ctx):
@@ -58,14 +59,14 @@ async def unmute(ctx):
         author = ctx.message.author
         username = author.name
         await analyzer.set_mute(channel, author.id, username, 0)
-        
+
 
 @client.command(name='updatescoutstats', help="fixes issues with unset scout fields", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def updatescoutstats(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
-        await analyzer.update_scout_stats() 
+        await analyzer.update_scout_stats()
 
 
 @client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
@@ -82,7 +83,8 @@ async def scout(ctx, *args):
         await analyzer.get_scout_info(channel, author, username, args)
 
 
-@client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'], pass_context=True)
+@client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'],
+                pass_context=True)
 async def relay(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -96,9 +98,9 @@ async def worldlist(ctx):
         await client.send_message(channel, analyzer.get_table(False))
 
 
-@client.command(name='deleteworlddata', help='Refreshes current world data. If you are found abusing, you will be removed.'
-                ' Works only with Staff rank.', aliases=['deleteeverythingrightmeow'],
-                pass_context=True)
+@client.command(name='deleteworlddata',
+                help='Refreshes current world data. If you are found abusing, you will be removed.'
+                     ' Works only with Staff rank.', aliases=['deleteeverythingrightmeow'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def deleteworlddata(ctx):
     channel = ctx.message.channel
@@ -159,7 +161,8 @@ async def commands():
                      "Example: `w59 4` or `14 2`\n\n"
                      "To call a core: `w[#] [core name]`.\n"
                      "Example: `w12 cres` or `42 seren`.\n"
-                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'e', 'sw', 'juna', 'j', 'seren', 'se', 'aagi', 'a']`.\n\n"
+                     "Aliases for core names are shown here: `['cres', 'c', 'sword', 'edicts', 'e', 'sw', 'juna', 'j', "
+                     "'seren', 'se', 'aagi', 'a']`.\n\n"
                      "To delete a world: `w[#] [0, d, dead, or gone]`.\n"
                      "Example: `w103 d` or `56 0`\n\n"
                      "To get a list of worlds to scout: `?scout [optional amount]`. \n"
@@ -186,23 +189,23 @@ async def info(ctx):
 async def ranks(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
-        ranks = {"Blue Raivyn\n",
-                 "Sscared\n",
-                 "Bomy\n",
-                 "Insulate\n",
-                 "DTP\n",
-                 "Pur\n",
-                 "Z oD\n",
-                 "Legend-ary\n",
-                 "HuntrMetroid\n",
-                 "Unicorn Snot\n",
-                 "Leighrose\n",
-                 "Eef Top\n",
-                 "Luna Kitten\n",
-                 "L eon\n"}
-        ranks = sorted(ranks)
+        rankies = {"Blue Raivyn\n",
+                   "Sscared\n",
+                   "Bomy\n",
+                   "Insulate\n",
+                   "DTP\n",
+                   "Pur\n",
+                   "Z oD\n",
+                   "Legend-ary\n",
+                   "HuntrMetroid\n",
+                   "Unicorn Snot\n",
+                   "Leighrose\n",
+                   "Eef Top\n",
+                   "Luna Kitten\n",
+                   "L eon\n"}
+        rankies = sorted(rankies)
         ranks_str = "★WealthRS★\n"
-        for name in ranks:
+        for name in rankies:
             ranks_str += str(name)
         await client.say("```" + ranks_str + "```")
     else:
@@ -229,14 +232,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print(f"Received message {message.content} in channel {message.channel} from {message.author.name}".translate(non_bmp_map))
+    print(f"Received message {message.content} in channel {message.channel} from {message.author.name}"
+          .translate(non_bmp_map))
 
     # Check if we are in the right channel
 
     if str(message.channel.type) == "private":
         await analyzer.analyze_call(message)
         return
-    
+
     if message.channel.name not in settings.channels:
         return
 
