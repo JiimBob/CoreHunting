@@ -10,6 +10,7 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
+VERSION = "1.3.37"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
@@ -180,9 +181,14 @@ async def commands():
 async def info(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
-        await client.say("This will say FC info! Eventually.")
+        await client.say("Look in: #fc-info for information.")
     else:
         pass
+
+
+@client.command(name='version', help='Lists current bot version.', pass_context=True)
+async def version():
+    await client.say("Current bot version: " + VERSION)
 
 
 @client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
