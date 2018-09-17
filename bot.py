@@ -68,7 +68,7 @@ async def clearranks(ctx):
 @commands.has_any_role(*settings.ranks)
 async def showbans(ctx):
     channel = ctx.message.channel
-    if channel.name in ["bot-calls", "ranks-and-bans"]:
+    if channel.name == "ranks-and-bans":
         await analyzer.showbans(channel)
 
 
@@ -76,7 +76,7 @@ async def showbans(ctx):
 @commands.has_any_role(*settings.ranks)
 async def showranks(ctx):
     channel = ctx.message.channel
-    if channel.name in ["bot-calls", "ranks-and-bans"]:
+    if channel.name == "ranks-and-bans":
         await analyzer.showranks(channel)
 
 
@@ -84,7 +84,7 @@ async def showranks(ctx):
 @commands.has_any_role(*settings.ranks)
 async def show(ctx):
     channel = ctx.message.channel
-    if channel.name in ["bot-calls", "ranks-and-bans"]:
+    if channel.name == "ranks-and-bans":
         await analyzer.showranksandbans(channel)
 
 
