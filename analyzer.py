@@ -98,8 +98,8 @@ class Analyzer:
     def __init__(self, client):
         self.worlds = {}
         self.scouts = {}  # current scouts with their assigned worlds
-        self.ranks = {}
-        self.bans = {}
+        self.ranks = []
+        self.bans = []
         self.load()
         self.client = client
         self.table_messages = {}  # dict of tables with messages of the table
@@ -385,6 +385,67 @@ class Analyzer:
             if self.scouts[id]["bot_mute"] == 0:
                 await self.client.send_message(author, response)
 
+    async def addban(self, username, channel):
+        self.bans.append(username)
+        message = "Added '" + username + "' to ban list."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def removeban(self, username, channel):
+        self.bans.remove(username)
+        message = "Removed '" + username + "' from ban list."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def clearbans(self, channel):
+        self.bans.clear()
+        message = "Cleared banlist."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def addrank(self, username, channel):
+        self.ranks.append(username)
+        message = "Added '" + username + "' to rank list."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def removerank(self, username, channel):
+        self.ranks.remove(username)
+        message = "Removed '" + username + "' from rank list."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def clearranks(self, channel):
+        self.ranks.clear()
+        message = "Cleared rank list."
+        await self.client.send_message(channel, message)
+        self.saverb()
+
+    async def showbans(self, channel):
+        message = "Bans:\n```\n"
+        for item in self.bans:
+            message += item + "\n"
+        message += "```"
+        await self.client.send_message(channel, message)
+
+    async def showranks(self, channel):
+        message = "Ranks:\n```\n"
+        for item in self.ranks:
+            message += item + "\n"
+        message += "```"
+        await self.client.send_message(channel, message)
+
+    async def showranksandbans(self, channel):
+        message = "Ranks:\n```\n"
+        for item in self.ranks:
+            message += item + "\n"
+        message += "```"
+        message += "Bans:\n```\n"
+        for item in self.bans:
+            message += item + "\n"
+        message += "```"
+        await self.client.send_message(channel, message)
+
     def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
 
@@ -398,9 +459,9 @@ class Analyzer:
 
     def saverb(self):
         with open(_save_ranks, 'w') as f:
-            json.dump(self.scouts, f, indent=2)
+            json.dump(self.ranks, f, indent=2)
         with open(_save_bans, 'w') as f:
-            json.dump(self.scouts, f, indent=2)
+            json.dump(self.bans, f, indent=2)
 
     def load(self):
         if os.path.isfile(_save_file):

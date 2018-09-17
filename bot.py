@@ -10,7 +10,7 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
-VERSION = "1.3.37"
+VERSION = "1.3.38"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
@@ -26,6 +26,66 @@ async def stats(ctx, arg="calls"):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.stats(channel, arg)
+
+
+@client.command(name='ban', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def ban(ctx, name):
+    await analyzer.addban(name, ctx.message.channel)
+
+
+@client.command(name='rank', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def rank(ctx, name):
+    await analyzer.addrank(name, ctx.message.channel)
+
+
+@client.command(name='removeban', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def removeban(ctx, name):
+    await analyzer.removeban(name, ctx.message.channel)
+
+
+@client.command(name='removerank', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def removerank(ctx, name):
+    await analyzer.removerank(name, ctx.message.channel)
+
+
+@client.command(name='clearbans', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def clearban(ctx):
+    await analyzer.clearbans(ctx.message.channel)
+
+
+@client.command(name='clearranks', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def clearranks(ctx):
+    await analyzer.clearranks(ctx.message.channel)
+
+
+@client.command(name='showbans', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def showbans(ctx):
+    channel = ctx.message.channel
+    if channel.name in ["bot-calls", "ranks-and-bans"]:
+        await analyzer.showbans(channel)
+
+
+@client.command(name='showranks', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def showranks(ctx):
+    channel = ctx.message.channel
+    if channel.name in ["bot-calls", "ranks-and-bans"]:
+        await analyzer.showranks(channel)
+
+
+@client.command(name='show', help="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def show(ctx):
+    channel = ctx.message.channel
+    if channel.name in ["bot-calls", "ranks-and-bans"]:
+        await analyzer.showranksandbans(channel)
 
 
 @client.command(name='lookup', help="can tag someone to get specific stats", aliases=['personal'], pass_context=True)
