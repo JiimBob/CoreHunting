@@ -10,7 +10,8 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
-VERSION = "1.3.38"
+VERSION = "1.3.39\n" \
+          "Last Updated: 9/18/2018"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
