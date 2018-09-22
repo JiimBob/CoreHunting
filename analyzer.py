@@ -260,7 +260,7 @@ class Analyzer:
     async def stats(self, channel, arg):
         scout_list = []
         if isinstance(arg, str):
-            if arg in ["calls", "scouts", "scout_requests"]:
+            if arg in ["calls", "scouts", "scout_requests", "scout_level"]:
                 sort_type = arg
                 scout_list = sorted(self.scouts.items(), key=lambda x: x[1][sort_type], reverse=True)
             elif arg in ["name"]:
@@ -272,7 +272,7 @@ class Analyzer:
         response = "Here are all the stats of all the scouts: \n"
         for id, scout in scout_list[:15]:
             response += "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
-                        "Scout Requests: `{scout_requests}`   Current world list: " \
+                        "Scout Requests: `{scout_requests}`   Scout Level: `{scout_level}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
         if len(response) > 1999:
             response = "Response reached max character limit and was removed. Let staff know of this issue."
@@ -288,7 +288,7 @@ class Analyzer:
                     id = id[0][0][2:-1]
         if id in self.scouts:
             response = "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
-                       "Scout Requests: `{scout_requests}`   Current world list: " \
+                       "Scout Requests: `{scout_requests}`   Scout Level: `{scout_level}`   Current world list: " \
                        "`{worlds}` \n".format(**self.scouts[id])
             await self.client.send_message(channel, response)
         else:
