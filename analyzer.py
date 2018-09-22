@@ -386,13 +386,22 @@ class Analyzer:
                 await self.client.send_message(author, response)
 
     async def addban(self, username, channel):
+        if username in self.bans:
+            message = username + " is already on ban list."
+            await self.client.send_message(channel, message)
+            return
         self.bans.append(username)
         message = "Added '" + username + "' to ban list."
         await self.client.send_message(channel, message)
         self.saverb()
 
     async def removeban(self, username, channel):
-        self.bans.remove(username)
+        try:
+            self.bans.remove(username)
+        except ValueError:
+            message = username + " is not on the ban list."
+            await self.client.send_message(channel, message)
+            return
         message = "Removed '" + username + "' from ban list."
         await self.client.send_message(channel, message)
         self.saverb()
@@ -404,13 +413,22 @@ class Analyzer:
         self.saverb()
 
     async def addrank(self, username, channel):
+        if username in self.ranks:
+            message = username + " is already on rank list."
+            await self.client.send_message(channel, message)
+            return
         self.ranks.append(username)
         message = "Added '" + username + "' to rank list."
         await self.client.send_message(channel, message)
         self.saverb()
 
     async def removerank(self, username, channel):
-        self.ranks.remove(username)
+        try:
+            self.ranks.remove(username)
+        except ValueError:
+            message = username + " is not on the rank list."
+            await self.client.send_message(channel, message)
+            return
         message = "Removed '" + username + "' from rank list."
         await self.client.send_message(channel, message)
         self.saverb()

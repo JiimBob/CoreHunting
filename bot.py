@@ -10,8 +10,8 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
-VERSION = "1.3.39\n" \
-          "Last Updated: 9/18/2018"
+VERSION = "1.3.40\n" \
+          "Last Updated: 9/22/2018"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
@@ -31,31 +31,35 @@ async def stats(ctx, arg="calls"):
 
 @client.command(name='ban', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def ban(ctx, name):
+async def ban(ctx, *names):
+    name = ' '.join(names)
     await analyzer.addban(name, ctx.message.channel)
 
 
 @client.command(name='rank', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def rank(ctx, name):
+async def rank(ctx, *names):
+    name = ' '.join(names)
     await analyzer.addrank(name, ctx.message.channel)
 
 
-@client.command(name='removeban', help="", pass_context=True)
+@client.command(name='removeban', help="", aliases=['unban', 'deban'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def removeban(ctx, name):
+async def removeban(ctx, *names):
+    name = ' '.join(names)
     await analyzer.removeban(name, ctx.message.channel)
 
 
-@client.command(name='removerank', help="", pass_context=True)
+@client.command(name='removerank', help="", aliases=['unrank', 'derank'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def removerank(ctx, name):
+async def removerank(ctx, *names):
+    name = ' '.join(names)
     await analyzer.removerank(name, ctx.message.channel)
 
 
 @client.command(name='clearbans', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
-async def clearban(ctx):
+async def clearbans(ctx):
     await analyzer.clearbans(ctx.message.channel)
 
 
@@ -65,7 +69,7 @@ async def clearranks(ctx):
     await analyzer.clearranks(ctx.message.channel)
 
 
-@client.command(name='showbans', help="", pass_context=True)
+@client.command(name='showbans', help="", aliases=['bans'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def showbans(ctx):
     channel = ctx.message.channel
@@ -269,7 +273,11 @@ async def ranks(ctx):
                    "Leighrose\n",
                    "Eef Top\n",
                    "Luna Kitten\n",
-                   "L eon\n"}
+                   "L eon\n"
+                   "Metal-chan"
+                   "xElissa"
+                   "Karios"
+                   "Velvet Tiger"}
         rankies = sorted(rankies)
         ranks_str = "★WealthRS★\n"
         for name in rankies:
@@ -335,4 +343,4 @@ if not os.path.exists(auth_file):
 with open(auth_file) as f:
     auth_data = json.load(f)
 
-client.run(auth_data['token'])
+client.run(auth_data['token2'])
