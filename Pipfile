@@ -1,2 +1,5 @@
+[packages]
+discord.py = "*"
+
 [requires]
-python_full_version = "3.6.6"
+python_version = "3.6"
