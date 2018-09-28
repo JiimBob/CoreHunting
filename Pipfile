@@ -6,6 +6,4 @@ verify_ssl = true
 python_version = "3.6.6"
 
 [packages]
-requests = { extras = ['socks'] }
-records = '>0.5.0'
-django = { git = 'https://github.com/Rapptz/discord.py.git'}
+discord = { git = 'https://github.com/Rapptz/discord.py.git'}
