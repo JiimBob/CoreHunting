@@ -243,8 +243,8 @@ async def ping(ctx):
     embed.add_field(name="Pong! :ping_pong:", value="...")
     before = time.monotonic()
     message = await client.send_message(ctx.message.channel, embed=embed)
-    ping = round((time.monotonic() - before) * 1000)
-    embed.set_field_at(0, name="Pong! :ping_pong:", value=f"Pong: {ping}ms")
+    pingms = round((time.monotonic() - before) * 1000)
+    embed.set_field_at(0, name="Pong! :ping_pong:", value=f"Pong: {pingms}ms")
     await client.edit_message(message, embed=embed)
 
 
