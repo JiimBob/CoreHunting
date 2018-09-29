@@ -239,9 +239,13 @@ async def restart(ctx):
 
 @client.command(name='ping', help='Checks bots ping.', pass_context=True)
 async def ping(ctx):
-    d = datetime.utcnow() - ctx.message.timestamp
-    s = d.seconds * 1000 + d.microseconds // 1000
-    await client.send_message(ctx.message.channel, f"Pong: {s}ms")
+    embed = discord.Embed(colour=ctx.message.author.top_role.colour)
+    embed.add_field(name="Pong! :ping_pong:", value="...")
+    before = time.monotonic()
+    message = await client.send_message(ctx.message.channel, embed=embed)
+    ping = round((time.monotonic() - before) * 1000)
+    embed.set_field_at(0, name="Pong! :ping_pong:", value=f"Pong: {ping}ms")
+    await client.edit_message(message, embed=embed)
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
