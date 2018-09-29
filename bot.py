@@ -2,8 +2,10 @@ import json
 import os
 import random
 import sys
+import time
+import datetime
+import discord
 
-from datetime import datetime
 from discord.ext.commands import Bot
 from discord.ext import commands
 from discord import Game
@@ -18,6 +20,7 @@ analyzer = Analyzer(client)
 auth_file = 'auth.json'
 non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
 settings = Settings()
+start_time = time.time()
 
 
 @client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
@@ -27,6 +30,26 @@ async def stats(ctx, arg="calls"):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.stats(channel, arg)
+
+
+@client.command(name='uptime', help="", pass_context=True)
+async def uptime(ctx):
+    possible_replies = [
+        'Ban Legend-ary',
+        'Legend-ary is a noob',
+        'Legend-ary? More like Ordin-ary',
+        'Legend-ary? Who?'
+    ]
+    current_time = time.time()
+    difference = int(round(current_time - start_time))
+    text = str(datetime.timedelta(seconds=difference))
+    embed = discord.Embed(colour=ctx.message.author.top_role.colour)
+    embed.add_field(name="Bot Uptime:", value=text)
+    embed.set_footer(text=random.choice(possible_replies))
+    try:
+        await client.send_message(ctx.message.channel, embed=embed)
+    except discord.HTTPException:
+        await client.send_message(ctx.message.channel, "Current uptime: " + text)
 
 
 @client.command(name='ban', help="", pass_context=True)
@@ -216,9 +239,13 @@ async def restart(ctx):
 
 @client.command(name='ping', help='Checks bots ping.', pass_context=True)
 async def ping(ctx):
-    d = datetime.utcnow() - ctx.message.timestamp
-    s = d.seconds * 1000 + d.microseconds // 1000
-    await client.send_message(ctx.message.channel, f"Pong: {s}ms")
+    embed = discord.Embed(colour=ctx.message.author.top_role.colour)
+    embed.add_field(name="Pong! :ping_pong:", value="...")
+    before = time.monotonic()
+    message = await client.send_message(ctx.message.channel, embed=embed)
+    pingms = round((time.monotonic() - before) * 1000)
+    embed.set_field_at(0, name="Pong! :ping_pong:", value=f"Pong: {pingms}ms")
+    await client.edit_message(message, embed=embed)
 
 
 @client.command(name='commands', help='Lists commands for calling/scouting.')
