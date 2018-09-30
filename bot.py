@@ -38,7 +38,10 @@ async def uptime(ctx):
         'Ban Legend-ary',
         'Legend-ary is a noob',
         'Legend-ary? More like Ordin-ary',
-        'Legend-ary? Who?'
+        'Legend-ary? Who?',
+        'Legend-ary‽ What a pleb!',
+        'Eew, keep that Legend-ary away from me.',
+        'Legend-ary.... :face_palm:'
     ]
     current_time = time.time()
     difference = int(round(current_time - start_time))
