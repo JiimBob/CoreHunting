@@ -6,7 +6,8 @@ import time
 import datetime
 import discord
 
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, CommandNotFound, DisabledCommand, CheckFailure, MissingRequiredArgument, \
+    BadArgument, TooManyArguments, UserInputError, CommandOnCooldown
 from discord.ext import commands
 from discord import Game
 from Settings import Settings
@@ -251,7 +252,7 @@ async def ping(ctx):
     await client.edit_message(message, embed=embed)
 
 
-@client.command(name='commands', help='Lists commands for calling/scouting.')
+@client.command(name='commands', help='Lists commands for calling/scouting.', pass_context=True)
 async def commands():
     await client.say("To report on a world: `w[#] [number of active plinths]`.\n"
                      "Example: `w59 4` or `14 2`\n\n"
@@ -359,12 +360,21 @@ async def on_message(message):
 
 
 @client.event
-async def on_command_error(ctx, error):
+async def on_command_error(error, ctx):
     print(f"Rip, error {ctx}, {error}")
-    server = [x for x in client.servers if x.name == settings.servers[0]][0]
-    bot_channel = [x for x in server.channels if x.name == settings.bot_only_channel][0]
-    if "check functions" in str(ctx):
-        await client.send_message(bot_channel, "You do not have necessary perms for this command.")
+    errors = {
+        CommandNotFound: 'Command not found.',
+        DisabledCommand: 'Command has been disabled.',
+        CheckFailure: 'Missing required permissions to issue command.',
+        MissingRequiredArgument: 'Command missing required arguments.',
+        BadArgument: 'Failed parsing given arguments.',
+        TooManyArguments: 'Too many arguments given for command.',
+        UserInputError: 'User input error.',
+        CommandOnCooldown: 'Command is on cooldown. Please wait a moment before trying again.'
+    }
+    for type, text in errors.items():
+        if isinstance(error, type):
+            return await client.send_message(ctx.message.channel, "Command error: " + errors[type])
 
 
 if not os.path.exists(auth_file):
