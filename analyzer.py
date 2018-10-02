@@ -55,7 +55,7 @@ def get_scout_level(scouts):
 
 def get_core_name(argument):
     switcher = {
-        'Party': "Party",
+        'party': "Party",
         'p': "Party",
         'c': "Cres",
         'cres': "Cres",
