@@ -24,6 +24,10 @@ settings = Settings()
 start_time = time.time()
 
 
+class WrongChannelError(commands.CommandError):
+    pass
+
+
 @client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
                 aliases=['highscores'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
@@ -60,40 +64,64 @@ async def uptime(ctx):
 @commands.has_any_role(*settings.ranks)
 async def ban(ctx, *names):
     name = ' '.join(names)
-    await analyzer.addban(name, ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.addban(name, ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='rank', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def rank(ctx, *names):
     name = ' '.join(names)
-    await analyzer.addrank(name, ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.addrank(name, ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='removeban', help="", aliases=['unban', 'deban'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def removeban(ctx, *names):
     name = ' '.join(names)
-    await analyzer.removeban(name, ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.removeban(name, ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='removerank', help="", aliases=['unrank', 'derank'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def removerank(ctx, *names):
     name = ' '.join(names)
-    await analyzer.removerank(name, ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.removerank(name, ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='clearbans', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def clearbans(ctx):
-    await analyzer.clearbans(ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.clearbans(ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='clearranks', help="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def clearranks(ctx):
-    await analyzer.clearranks(ctx.message.channel)
+    channel = ctx.message.channel
+    if channel.name == "ranks-and-bans":
+        await analyzer.clearranks(ctx.message.channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='showbans', help="", aliases=['bans'], pass_context=True)
@@ -102,6 +130,8 @@ async def showbans(ctx):
     channel = ctx.message.channel
     if channel.name == "ranks-and-bans":
         await analyzer.showbans(channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='showranks', help="", pass_context=True)
@@ -110,6 +140,8 @@ async def showranks(ctx):
     channel = ctx.message.channel
     if channel.name == "ranks-and-bans":
         await analyzer.showranks(channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='show', help="", pass_context=True)
@@ -118,6 +150,8 @@ async def show(ctx):
     channel = ctx.message.channel
     if channel.name == "ranks-and-bans":
         await analyzer.showranksandbans(channel)
+    else:
+        raise WrongChannelError
 
 
 @client.command(name='lookup', help="can tag someone to get specific stats", aliases=['personal'], pass_context=True)
@@ -370,7 +404,8 @@ async def on_command_error(error, ctx):
         BadArgument: 'Failed parsing given arguments.',
         TooManyArguments: 'Too many arguments given for command.',
         UserInputError: 'User input error.',
-        CommandOnCooldown: 'Command is on cooldown. Please wait a moment before trying again.'
+        CommandOnCooldown: 'Command is on cooldown. Please wait a moment before trying again.',
+        WrongChannelError: 'Command issued in a channel that isn\'t allowed.'
     }
     for type, text in errors.items():
         if isinstance(error, type):
