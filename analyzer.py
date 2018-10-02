@@ -127,7 +127,7 @@ class Analyzer:
                                                    f"NOTE, w{world} is a {_special_worlds[world]}.")
 
             if world not in self.worlds:
-                await self.client.send_message(message.channel, f"{world} is not a p2p english world")
+                await self.client.send_message(message.channel, f"{world} is not a p2p english world.")
                 return
 
             # clear worlds from scouts
@@ -319,7 +319,7 @@ class Analyzer:
     async def set_mute(self, channel, id, name, value):
         self.check_make_scout(id, name)
         self.scouts[id]["bot_mute"] = value
-        await self.client.send_message(channel, f"{name} changed bot_mute")
+        await self.client.send_message(channel, f"{name} changed bot_mute.")
         self.saves()
 
     async def reset_scout(self, channel, id, name):
@@ -333,7 +333,7 @@ class Analyzer:
                 extra_time = (26 - previous_call * 4) * 60
             self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
         self.scouts[id]["worlds"] = []
-        await self.client.send_message(channel, f"{name} deleted his scout list")
+        await self.client.send_message(channel, f"{name} deleted his scout list.")
 
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
@@ -343,11 +343,11 @@ class Analyzer:
         if id in self.scouts and len(self.scouts[id]["worlds"]) > 0:
             await self.client.send_message(channel,
                                            f"{username}, you still need to scout: {self.scouts[id]['worlds']} "
-                                           f"use `?resetscout` if you want to delete your list")
+                                           f"Use `?resetscout` if you want to delete your list.")
             if self.scouts[id]["bot_mute"] == 0:
                 await self.client.send_message(author,
-                                               f"you still need to scout {self.scouts[id]['worlds'] } "
-                                               f"use `?resetscout` if you want to delete your list")
+                                               f"You still need to scout: {self.scouts[id]['worlds'] } "
+                                               f"Use `?resetscout` if you want to delete your list.")
             return
         else:
             self.check_make_scout(id, username)
@@ -376,9 +376,9 @@ class Analyzer:
 
             response = "error getting worlds"
             if len(result) == 1:
-                response = f"{username}, please scout world {result[0]}"
+                response = f"{username}, please scout world: {result[0]}."
             elif len(result) >= 2:
-                response = f"{username}, please scout the following worlds {result}"
+                response = f"{username}, please scout the following worlds: {result}."
             self.scouts[id]["worlds"] = worlds
             self.saves()
             await self.client.send_message(channel, response)
