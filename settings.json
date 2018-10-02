@@ -1,7 +1,7 @@
 {
   "servers": ["CoreHunting", "Leon", "Core Hunting"],
   "channels": ["bot-calls", "bottom-secret", "corecalls", "ranks-and-bans"],
-  "ranks": ["Staff", "wealths purple role"],
+  "ranks": ["Staff"],
   "bot-only-channel": "bot-calls"
 
 }
