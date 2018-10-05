@@ -13,8 +13,8 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
-VERSION = "1.3.40\n" \
-          "Last Updated: 9/22/2018"
+VERSION = "1.5.5\n" \
+          "Last Updated: 10/5/2018"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)
@@ -28,7 +28,7 @@ class WrongChannelError(commands.CommandError):
     pass
 
 
-@client.command(name='stats', help="shows the stats of all the scouts / callers, can tag someone to get specific stats",
+@client.command(name='stats', help="", brief="Shows stats of all scouts.", description="",
                 aliases=['highscores'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def stats(ctx, arg="calls"):
@@ -37,7 +37,13 @@ async def stats(ctx, arg="calls"):
         await analyzer.stats(channel, arg)
 
 
-@client.command(name='uptime', help="", pass_context=True)
+@client.command(name='save', help="", brief="", description="", pass_context=True)
+@commands.has_any_role(*settings.ranks)
+async def save(ctx):
+    await analyzer.save()
+
+
+@client.command(name='uptime', help="", brief="Displays how long bot has been live.", description="", pass_context=True)
 async def uptime(ctx):
     possible_replies = [
         'Ban Legend-ary',
@@ -60,7 +66,7 @@ async def uptime(ctx):
         await client.send_message(ctx.message.channel, "Current uptime: " + text)
 
 
-@client.command(name='ban', help="", pass_context=True)
+@client.command(name='ban', help="", brief="Adds username for staff to ban.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def ban(ctx, *names):
     name = ' '.join(names)
@@ -71,7 +77,7 @@ async def ban(ctx, *names):
         raise WrongChannelError
 
 
-@client.command(name='rank', help="", pass_context=True)
+@client.command(name='rank', help="", brief="Adds username for staff to rank.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def rank(ctx, *names):
     name = ' '.join(names)
@@ -82,7 +88,8 @@ async def rank(ctx, *names):
         raise WrongChannelError
 
 
-@client.command(name='removeban', help="", aliases=['unban', 'deban'], pass_context=True)
+@client.command(name='removeban', help="", brief="Removes bans from list.", description="",
+                aliases=['unban', 'deban'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def removeban(ctx, *names):
     name = ' '.join(names)
@@ -93,7 +100,7 @@ async def removeban(ctx, *names):
         raise WrongChannelError
 
 
-@client.command(name='removerank', help="", aliases=['unrank', 'derank'], pass_context=True)
+@client.command(name='removerank', help="", brief="Removes rank from list.", description="", aliases=['unrank', 'derank'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def removerank(ctx, *names):
     name = ' '.join(names)
@@ -104,7 +111,7 @@ async def removerank(ctx, *names):
         raise WrongChannelError
 
 
-@client.command(name='clearbans', help="", pass_context=True)
+@client.command(name='clearbans', help="", brief="Clears ban list.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def clearbans(ctx):
     channel = ctx.message.channel
@@ -114,7 +121,7 @@ async def clearbans(ctx):
         raise WrongChannelError
 
 
-@client.command(name='clearranks', help="", pass_context=True)
+@client.command(name='clearranks', help="", brief="Clears rank list.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def clearranks(ctx):
     channel = ctx.message.channel
@@ -124,7 +131,8 @@ async def clearranks(ctx):
         raise WrongChannelError
 
 
-@client.command(name='showbans', help="", aliases=['bans'], pass_context=True)
+@client.command(name='showbans', help="", brief="Shows just ban list.", description="",
+                aliases=['bans'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def showbans(ctx):
     channel = ctx.message.channel
@@ -134,7 +142,7 @@ async def showbans(ctx):
         raise WrongChannelError
 
 
-@client.command(name='showranks', help="", pass_context=True)
+@client.command(name='showranks', help="", brief="Shows just rank list.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def showranks(ctx):
     channel = ctx.message.channel
@@ -144,7 +152,7 @@ async def showranks(ctx):
         raise WrongChannelError
 
 
-@client.command(name='show', help="", pass_context=True)
+@client.command(name='show', help="", brief="Shows rank and ban list.", description="", pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def show(ctx):
     channel = ctx.message.channel
@@ -154,14 +162,16 @@ async def show(ctx):
         raise WrongChannelError
 
 
-@client.command(name='lookup', help="can tag someone to get specific stats", aliases=['personal'], pass_context=True)
+@client.command(name='lookup', help="Can tag someone to lookup specific users stats.", brief="", description="",
+                aliases=['personal'], pass_context=True)
 async def lookup(ctx, *id):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.lookup(channel, id)
 
 
-@client.command(name='resetscout', help="deletes your asigned scout list", aliases=['rs'], pass_context=True)
+@client.command(name='resetscout', help="Deletes your assigned scout list.", aliases=['rs'], brief="", description="",
+                pass_context=True)
 async def resetscout(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -170,7 +180,8 @@ async def resetscout(ctx):
         await analyzer.reset_scout(channel, author.id, username)
 
 
-@client.command(name='mute', help="mutes the pms from the bot", aliases=['zipit', 'stfu'], pass_context=True)
+@client.command(name='mute', help="Mutes the bot from pming you.", brief="", description="",
+                aliases=['zipit', 'stfu'], pass_context=True)
 async def mute(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -179,7 +190,8 @@ async def mute(ctx):
         await analyzer.set_mute(channel, author.id, username, 1)
 
 
-@client.command(name='unmute', help="unmutes the pms from the bot", aliases=['unzup'], pass_context=True)
+@client.command(name='unmute', help="Unmutes the bot so you can be messaged.", brief="", description="",
+                aliases=['unzup'], pass_context=True)
 async def unmute(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -188,7 +200,8 @@ async def unmute(ctx):
         await analyzer.set_mute(channel, author.id, username, 0)
 
 
-@client.command(name='updatescoutstats', help="fixes issues with unset scout fields", pass_context=True)
+@client.command(name='updatescoutstats', help="fixes issues with unset scout fields", brief="", description="",
+                pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def updatescoutstats(ctx):
     channel = ctx.message.channel
@@ -196,7 +209,8 @@ async def updatescoutstats(ctx):
         await analyzer.update_scout_stats()
 
 
-@client.command(name='scout', help='Request a range of worlds to scout.', aliases=['request', 'req'], pass_context=True)
+@client.command(name='scout', help='Gives you a list of best worlds to scout.', brief="", description="",
+                aliases=['request', 'req'], pass_context=True)
 async def scout(ctx, *args):
     channel = ctx.message.channel
     if len(args) != 0:
@@ -210,15 +224,15 @@ async def scout(ctx, *args):
         await analyzer.get_scout_info(channel, author, username, args)
 
 
-@client.command(name='relay', help="Relays the current world data", aliases=['worlds', 'list', 'calls'],
-                pass_context=True)
+@client.command(name='relay', help="Brings worldlist to newest message.", brief="", description="",
+                aliases=['worlds', 'list', 'calls'], pass_context=True)
 async def relay(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
         await analyzer.relay(channel)
 
 
-@client.command(name='worldlist', help="Prints full world list", pass_context=True)
+@client.command(name='worldlist', help="Shows all scouted worlds.", brief="", description="", pass_context=True)
 async def worldlist(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -227,7 +241,8 @@ async def worldlist(ctx):
 
 @client.command(name='deleteworlddata',
                 help='Refreshes current world data. If you are found abusing, you will be removed.'
-                     ' Works only with Staff rank.', aliases=['deleteeverythingrightmeow'], pass_context=True)
+                     ' Works only with Staff rank.', brief="", description="",
+                aliases=['deleteeverythingrightmeow'], pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def deleteworlddata(ctx):
     channel = ctx.message.channel
@@ -239,7 +254,7 @@ async def deleteworlddata(ctx):
         'removed',
         'cleared',
         'erased',
-        'emptied,'
+        'emptied',
         'nulled',
         'terminated',
         'eradicated',
@@ -249,13 +264,14 @@ async def deleteworlddata(ctx):
         'destroyed'
     ]
     if channel.name in settings.channels:
-        analyzer.reset()
+        await analyzer.reset()
         response = f"World data has been {random.choice(possible_replies)}."
         await client.send_message(channel, response)
         await analyzer.relay(channel)
 
 
-@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', pass_context=True)
+@client.command(name='stop', help='Stops bot vigorously. Works only with Staff rank.', brief="", description="",
+                pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def stop(ctx):
     print("Attempting to stop")
@@ -266,7 +282,8 @@ async def stop(ctx):
     exit(0)
 
 
-@client.command(name='restart', help='Restarts bot.', pass_context=True)
+@client.command(name='restart', help='Restarts bot.', brief="", description="",
+                pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def restart(ctx):
     analyzer.saves()
@@ -275,7 +292,7 @@ async def restart(ctx):
     analyzer.restart_program()
 
 
-@client.command(name='ping', help='Checks bots ping.', pass_context=True)
+@client.command(name='ping', help='Checks bots ping.', brief="", description="", pass_context=True)
 async def ping(ctx):
     embed = discord.Embed(colour=ctx.message.author.top_role.colour)
     embed.add_field(name="Pong! :ping_pong:", value="...")
@@ -286,7 +303,8 @@ async def ping(ctx):
     await client.edit_message(message, embed=embed)
 
 
-@client.command(name='commands', help='Lists commands for calling/scouting.', pass_context=True)
+@client.command(name='commands', help='Lists commands for calling/scouting.', brief="Lists commands", description="",
+                pass_context=True)
 async def commands():
     await client.say("To report on a world: `w[#] [number of active plinths]`.\n"
                      "Example: `w59 4` or `14 2`\n\n"
@@ -307,7 +325,8 @@ async def commands():
                      "To get the full list: `?worldlist`")
 
 
-@client.command(name='info', help='Lists FC info.', pass_context=True)
+@client.command(name='info', help='Lists FC info.', brief="", description="",
+                pass_context=True)
 async def info(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -316,12 +335,14 @@ async def info(ctx):
         pass
 
 
-@client.command(name='version', help='Lists current bot version.', pass_context=True)
+@client.command(name='version', help='Lists current bot version.', brief="", description="",
+                pass_context=True)
 async def version():
     await client.say("Current bot version: " + VERSION)
 
 
-@client.command(name='ranks', help='Lists current FC ranks.', pass_context=True)
+@client.command(name='ranks', help='Lists current FC ranks.', brief="", description="",
+                pass_context=True)
 async def ranks(ctx):
     channel = ctx.message.channel
     if channel.name in settings.channels:
@@ -355,6 +376,7 @@ async def ranks(ctx):
 @client.event
 async def on_ready():
     await client.change_presence(game=Game(name="Hall of Memories"))
+    await analyzer.loadworlds()
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
