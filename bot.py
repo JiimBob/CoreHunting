@@ -440,4 +440,4 @@ if not os.path.exists(auth_file):
 with open(auth_file) as f:
     auth_data = json.load(f)
 
-client.run(os.environ['BOTTOKEN'])
+client.run(auth_data['token'])
