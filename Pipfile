@@ -7,3 +7,4 @@ python_version = "3.6.6"
 
 [packages]
 discord = { git = 'https://github.com/Rapptz/discord.py.git'}
+asyncpg = { git = 'https://github.com/MagicStack/asyncpg.git'}
