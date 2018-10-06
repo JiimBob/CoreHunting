@@ -1,10 +1,14 @@
 import math
 import os
 import re
+import ssl
 import sys
 import time
 import random
 import json
+import asyncpg
+
+from typing import Dict, List, Any
 
 
 def parse_line(line):
@@ -27,7 +31,7 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
                116, 117, 119, 123, 124, 134, 137, 138, 139, 140}
 exp_table = {0: 0, 1: 83, 2: 174, 3: 276, 4: 388, 5: 512, 6: 650, 7: 801, 8: 969, 9: 1154, 10: 1358,
              11: 1584, 12: 1833, 13: 2107, 14: 2411, 15: 2746, 16: 3115, 17: 3523, 18: 3973, 19: 4470,
-             20: 5018, 21: 5624, 22: 6291, 23: 7028, 24: 7842}
+             20: 5018, 21: 5624, 22: 6291, 23: 7028, 24: 7842, 25: 2147483647}
 
 
 def _get_special_worlds():
@@ -155,7 +159,6 @@ class Analyzer:
                         await self.client.send_message(message.channel,
                                                        f"{message.author.name} has leveled up in scouting! "
                                                        f"{message.author.name} is now level {scout_level} in scouting.")
-
             else:
                 if str(call) in ['reset', 'r']:
                     return
@@ -169,8 +172,8 @@ class Analyzer:
                     self.check_make_scout(id, message.author.name)
                     self.scouts[id]["calls"] += 1
             # else. check for cres/sword/juna/seren/aagi/reset etc
-            self.saves()
-            self.savew()
+        # await self.savescouttodb(id)
+        await self.saveworldtodb(world)
         await self.relay(message.channel)
 
     async def relay(self, channel):
@@ -255,7 +258,6 @@ class Analyzer:
     async def update_scout_stats(self):
         for id in self.scouts:
             self.check_make_scout(id, self.scouts[id]["name"])
-            self.saves()
 
     async def stats(self, channel, arg):
         scout_list = []
@@ -270,7 +272,7 @@ class Analyzer:
                 sort_type = "scouts"
                 print(arg)
         response = "Here are all the stats of all the scouts: \n"
-        for id, scout in scout_list[:15]:
+        for id, scout in scout_list[:10]:
             response += "{name}:   Scouts: `{scouts}`   Scout level: `{scout_level}`   Calls: `{calls}`    " \
                         "Scout Requests: `{scout_requests}`   Scout Level: `{scout_level}`   Current world list: " \
                         "`{worlds}` \n".format(**self.scouts[id])
@@ -320,7 +322,6 @@ class Analyzer:
         self.check_make_scout(id, name)
         self.scouts[id]["bot_mute"] = value
         await self.client.send_message(channel, f"{name} changed bot_mute.")
-        self.saves()
 
     async def reset_scout(self, channel, id, name):
         self.check_make_scout(id, name)
@@ -333,7 +334,7 @@ class Analyzer:
                 extra_time = (26 - previous_call * 4) * 60
             self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
         self.scouts[id]["worlds"] = []
-        await self.client.send_message(channel, f"{name} deleted his scout list.")
+        await self.client.send_message(channel, f"{name} deleted their scout list.")
 
     # command = ?scout *amount
     # optional parameter amount can range from 1 to 10
@@ -380,7 +381,6 @@ class Analyzer:
             elif len(result) >= 2:
                 response = f"{username}, please scout the following worlds: {result}."
             self.scouts[id]["worlds"] = worlds
-            self.saves()
             await self.client.send_message(channel, response)
             if self.scouts[id]["bot_mute"] == 0:
                 await self.client.send_message(author, response)
@@ -464,29 +464,25 @@ class Analyzer:
         message += "```"
         await self.client.send_message(channel, message)
 
-    def reset(self):
+    async def reset(self):
         self.worlds = {w: (0, 0, 0) for w in _all_worlds}
+        await self.savew()
 
-    def savew(self):
-        with open(_save_file, 'w') as f:
-            json.dump(self.worlds, f, indent=2)
+    async def save(self):
+        for item in self.scouts:
+            await self.savescouttodb(item)
+        for item in self.worlds:
+            await self.saveworldtodb(item)
 
-    def saves(self):
-        with open(_save_stats, 'w') as f:
-            json.dump(self.scouts, f, indent=2)
+    async def savew(self):
+        for item in self.worlds:
+            await self.saveworldtodb(item)
 
-    def saverb(self):
-        with open(_save_ranks, 'w') as f:
-            json.dump(self.ranks, f, indent=2)
-        with open(_save_bans, 'w') as f:
-            json.dump(self.bans, f, indent=2)
+    async def saves(self):
+        for item in self.scouts:
+            await self.savescouttodb(item)
 
     def load(self):
-        if os.path.isfile(_save_file):
-            with open(_save_file, 'r') as f:
-                self.worlds = json.load(f, object_hook=_json_keys_to_str)
-        else:
-            self.reset()
         if os.path.isfile(_save_stats):
             with open(_save_stats, 'r') as f:
                 self.scouts = json.load(f)
@@ -496,6 +492,76 @@ class Analyzer:
         if os.path.isfile(_save_bans):
             with open(_save_bans, 'r') as f:
                 self.bans = json.load(f)
+
+    def saverb(self):
+        with open(_save_ranks, 'w') as f:
+            json.dump(self.ranks, f, indent=2)
+        with open(_save_bans, 'w') as f:
+            json.dump(self.bans, f, indent=2)
+
+    async def loadworlds(self):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
+        dict1 = {}
+        for i in _all_worlds:
+            json_str = await conn.fetchrow('SELECT * FROM world_data WHERE world = $1', str(i))
+            json_dict = dict(json_str)
+            dict2 = {
+                int(json_dict['world']):
+                    [
+                        int(json_dict['plinths']) if self.representsint(json_dict['plinths']) else
+                        str(json_dict['plinths']),
+                        int(json_dict['scout_time']),
+                        int(json_dict['reassign_time'])
+                    ]
+            }
+            dict1 = {**dict1, **dict2}
+        conn.close
+        self.worlds = dict1
+
+    async def savescouttodb(self, data):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
+        my_data: Dict[Any, List[Any]] = {
+            data: [self.scouts[data]["name"], self.scouts[data]["calls"], self.scouts[data]["scouts"],
+                   self.scouts[data]["scout_level"], self.scouts[data]["scout_requests"], self.scouts[data]["bot_mute"]]
+        }
+        await conn.execute('''
+                INSERT INTO scouts(memberid, name, calls, scouts, scout_level, scout_requests, bot_mute) 
+                VALUES($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT (memberid) DO UPDATE 
+                SET "name" = $2, "calls" = $3, "scouts" = $4, "scout_level" = $5, "scout_requests" = $6, "bot_mute" = $7
+            ''', data, my_data[data][0], my_data[data][1], my_data[data][2], my_data[data][3], my_data[data][4],
+                           my_data[data][5])
+        await conn.close()
+
+    async def saveworldtodb(self, data):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
+        my_data: Dict[Any, List[Any]] = {
+            data: [self.worlds[data][0], self.worlds[data][1], self.worlds[data][2]]
+        }
+        await conn.execute('''
+                INSERT INTO world_data(world, plinths, scout_time, reassign_time) 
+                VALUES($1, $2, $3, $4)
+                ON CONFLICT (world) DO UPDATE 
+                SET "plinths" = $2, "scout_time" = $3, "reassign_time" = $4
+            ''', str(data), str(my_data[data][0]), my_data[data][1], my_data[data][2])
+        await conn.close()
+
+    @staticmethod
+    def representsint(s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
 
     @staticmethod
     def is_ok(v1, v2):

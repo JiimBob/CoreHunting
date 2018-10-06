@@ -3,5 +3,4 @@
   "channels": ["bot-calls", "bottom-secret", "corecalls", "ranks-and-bans"],
   "ranks": ["Staff"],
   "bot-only-channel": "bot-calls"
-
 }
