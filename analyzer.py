@@ -537,7 +537,6 @@ class Analyzer:
                 }
             }
             dict1 = {**dict1, **dict2}
-            print(dict1)
         conn.close
         self.scouts = dict1
 

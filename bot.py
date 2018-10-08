@@ -46,21 +46,11 @@ async def save(ctx):
 
 @client.command(name='uptime', help="", brief="Displays how long bot has been live.", description="", pass_context=True)
 async def uptime(ctx):
-    possible_replies = [
-        'Ban Legend-ary',
-        'Legend-ary is a noob',
-        'Legend-ary? More like Ordin-ary',
-        'Legend-ary? Who?',
-        'Legend-ary‽ What a pleb!',
-        'Eew, keep that Legend-ary away from me.',
-        'Legend-ary.... :face_palm:'
-    ]
     current_time = time.time()
     difference = int(round(current_time - start_time))
     text = str(datetime.timedelta(seconds=difference))
     embed = discord.Embed(colour=ctx.message.author.top_role.colour)
     embed.add_field(name="Bot Uptime:", value=text)
-    embed.set_footer(text=random.choice(possible_replies))
     try:
         await client.send_message(ctx.message.channel, embed=embed)
     except discord.HTTPException:
@@ -293,8 +283,8 @@ async def stop(ctx):
                 pass_context=True)
 @commands.has_any_role(*settings.ranks)
 async def restart(ctx):
-    analyzer.saves()
-    analyzer.savew()
+    await analyzer.saves()
+    await analyzer.savew()
     await client.send_message(ctx.message.channel, "Restarting....")
     analyzer.restart_program()
 
