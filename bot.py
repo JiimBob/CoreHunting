@@ -172,7 +172,6 @@ async def lookup(ctx, *id):
 
 
 @client.command(name='slap', help="", brief="", description="", pass_context=True)
-@commands.has_any_role(*settings.ranks)
 async def slap(ctx, id):
     channel = ctx.message.channel
     await client.send_message(channel, f"{ctx.message.author.name} slapped {id}‽")
