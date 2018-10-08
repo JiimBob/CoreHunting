@@ -172,7 +172,7 @@ class Analyzer:
                     self.check_make_scout(id, message.author.name)
                     self.scouts[id]["calls"] += 1
             # else. check for cres/sword/juna/seren/aagi/reset etc
-        # await self.savescouttodb(id)
+        await self.savescouttodb(id)
         await self.saveworldtodb(world)
         await self.relay(message.channel)
 
