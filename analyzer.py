@@ -369,18 +369,17 @@ class Analyzer:
             else:
                 i = random.randint(0, len(all_worlds) - amount)
             result = all_worlds[i:i + amount]
-            worlds = all_worlds[i:i + amount]
             for j in range(i, i + amount):
                 world = self.worlds[all_worlds[j]]
                 extra_time = 15 * 60
                 self.worlds[all_worlds[j]] = [world[0], world[1], time.time() + extra_time]
-            worlds = sorted(worlds)
+            result = sorted(result)
             response = "error getting worlds"
             if len(result) == 1:
                 response = f"{username}, please scout world: {result[0]}."
             elif len(result) >= 2:
                 response = f"{username}, please scout the following worlds: {result}."
-            self.scouts[id]["worlds"] = worlds
+            self.scouts[id]["worlds"] = result
             await self.client.send_message(channel, response)
             if self.scouts[id]["bot_mute"] == 0:
                 await self.client.send_message(author, response)
