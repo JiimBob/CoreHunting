@@ -101,7 +101,7 @@ def _json_keys_to_dict(x):
 class Analyzer:
     def __init__(self, client):
         self.worlds = {}
-        self.scouts = {}  # current scouts with their assigned worlds
+        self.scouts = {}
         self.ranks = []
         self.bans = []
         self.load()
@@ -483,9 +483,6 @@ class Analyzer:
             await self.savescouttodb(item)
 
     def load(self):
-        if os.path.isfile(_save_stats):
-            with open(_save_stats, 'r') as f:
-                self.scouts = json.load(f)
         if os.path.isfile(_save_ranks):
             with open(_save_ranks, 'r') as f:
                 self.ranks = json.load(f)
@@ -542,7 +539,6 @@ class Analyzer:
             dict1 = {**dict1, **dict2}
         conn.close
         self.scouts = dict1
-
 
     async def savescouttodb(self, data):
         ctx = ssl.create_default_context()
