@@ -515,7 +515,6 @@ class Analyzer:
             }
             dict1 = {**dict1, **dict2}
         conn.close
-        dict1 = sorted(dict1, dict1)
         self.worlds = dict1
 
     async def loadscouts(self):
