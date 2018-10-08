@@ -502,15 +502,16 @@ class Analyzer:
         ctx.verify_mode = ssl.CERT_NONE
         conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
         dict1 = {}
-        worlds = await conn.fetch('SELECT * FROM public.world_data')
-        for item in worlds:
+        for i in _all_worlds:
+            json_str = await conn.fetchrow('SELECT * FROM world_data WHERE world = $1', str(i))
+            json_dict = dict(json_str)
             dict2 = {
-                item['world']:
+                int(json_dict['world']):
                     [
-                        int(item['plinths']) if self.representsint(item['plinths']) else
-                        str(item['plinths']),
-                        int(item['scout_time']),
-                        int(item['reassign_time'])
+                        int(json_dict['plinths']) if self.representsint(json_dict['plinths']) else
+                        str(json_dict['plinths']),
+                        int(json_dict['scout_time']),
+                        int(json_dict['reassign_time'])
                     ]
             }
             dict1 = {**dict1, **dict2}
