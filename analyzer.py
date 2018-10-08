@@ -374,7 +374,7 @@ class Analyzer:
                 world = self.worlds[all_worlds[j]]
                 extra_time = 15 * 60
                 self.worlds[all_worlds[j]] = [world[0], world[1], time.time() + extra_time]
-
+            worlds = sorted(worlds)
             response = "error getting worlds"
             if len(result) == 1:
                 response = f"{username}, please scout world: {result[0]}."
@@ -515,6 +515,7 @@ class Analyzer:
             }
             dict1 = {**dict1, **dict2}
         conn.close
+        dict1 = sorted(dict1, dict1)
         self.worlds = dict1
 
     async def loadscouts(self):
