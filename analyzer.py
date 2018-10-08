@@ -505,21 +505,44 @@ class Analyzer:
         ctx.verify_mode = ssl.CERT_NONE
         conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
         dict1 = {}
-        for i in _all_worlds:
-            json_str = await conn.fetchrow('SELECT * FROM world_data WHERE world = $1', str(i))
-            json_dict = dict(json_str)
+        worlds = await conn.fetch('SELECT * FROM world_data')
+        for item in worlds:
             dict2 = {
-                int(json_dict['world']):
+                item['world']:
                     [
-                        int(json_dict['plinths']) if self.representsint(json_dict['plinths']) else
-                        str(json_dict['plinths']),
-                        int(json_dict['scout_time']),
-                        int(json_dict['reassign_time'])
+                        int(item['plinths']) if self.representsint(item['plinths']) else
+                        str(item['plinths']),
+                        int(item['scout_time']),
+                        int(item['reassign_time'])
                     ]
             }
             dict1 = {**dict1, **dict2}
         conn.close
         self.worlds = dict1
+
+    async def loadscouts(self):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
+        scouts = await conn.fetch('SELECT * FROM scouts')
+        dict1 = {}
+        for item in scouts:
+            dict2 = {
+                item['memberid']: {
+                    "name": item['name'],
+                    "calls": item['calls'],
+                    "scouts": item['scouts'],
+                    "scout_level": item['scout_level'],
+                    "scout_requests": item['scout_requests'],
+                    "worlds": [],
+                    "bot_mute": item['bot_mute']
+                }
+            }
+            dict1 = {**dict1, **dict2}
+        conn.close
+        self.scouts = dict1
+
 
     async def savescouttodb(self, data):
         ctx = ssl.create_default_context()

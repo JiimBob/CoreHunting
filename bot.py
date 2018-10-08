@@ -385,6 +385,7 @@ async def ranks(ctx):
 async def on_ready():
     await client.change_presence(game=Game(name="Hall of Memories"))
     await analyzer.loadworlds()
+    await analyzer.loadscouts()
     print('Connected!')
     print('Username: ' + client.user.name)
     print('ID: ' + client.user.id)
@@ -417,6 +418,7 @@ async def on_message(message):
     if message.server.name not in settings.servers:
         return
 
+    message.content = message.content.lower()
     await client.process_commands(message)
 
     # Analyse the message
@@ -449,3 +451,4 @@ with open(auth_file) as f:
     auth_data = json.load(f)
 
 client.run(os.environ['BOTTOKEN'])
+# client.run(auth_data['token'])
