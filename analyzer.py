@@ -505,7 +505,7 @@ class Analyzer:
         ctx.verify_mode = ssl.CERT_NONE
         conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
         dict1 = {}
-        worlds = await conn.fetch('SELECT * FROM world_data')
+        worlds = await conn.fetch('SELECT * FROM public.world_data')
         for item in worlds:
             dict2 = {
                 item['world']:
@@ -525,7 +525,7 @@ class Analyzer:
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
         conn = await asyncpg.connect(os.environ['DATABASE_URL'], ssl=ctx)
-        scouts = await conn.fetch('SELECT * FROM scouts')
+        scouts = await conn.fetch('SELECT * FROM public.scouts')
         dict1 = {}
         for item in scouts:
             dict2 = {
