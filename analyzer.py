@@ -288,6 +288,7 @@ class Analyzer:
             table += "# = world is vip only.\n"
         if qc_b:
             table += "~ = world is quick chat only.\n"
+        table += "r = 1 or 2 people, b = 3+ people"
         return "```" + table + "```"
 
     async def update_scout_stats(self):
