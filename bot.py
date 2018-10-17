@@ -13,8 +13,8 @@ from discord import Game
 from Settings import Settings
 from analyzer import Analyzer
 
-VERSION = "1.6.0\n" \
-          "Last Updated: 10/8/2018"
+VERSION = "1.6.9\n" \
+          "Last Updated: 10/16/2018"
 BOT_PREFIX = ("~", "?")
 client = Bot(command_prefix=BOT_PREFIX)
 analyzer = Analyzer(client)

@@ -18,6 +18,8 @@ def parse_line(line):
     line = line.replace("  ", " ")
     line = re.sub("(sword|edict)$", "sw", line)
     line = re.sub("( dead| gone| d)$", " 0", line)
+    line = re.sub("( random| rands| rand)$", " r", line)
+    line = re.sub("( busy)$", " b", line)
     return line
 
 
@@ -30,27 +32,27 @@ _all_worlds = {1, 2, 4, 5, 6, 9, 10, 12, 14, 15, 16, 18, 21, 22, 23, 24, 25, 26,
                73, 74, 76, 77, 78, 79, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 96, 98, 99, 100, 103, 104, 105, 114, 115,
                116, 117, 119, 123, 124, 134, 137, 138, 139, 140}
 exp_table = {
-             0: 0, 1: 83, 2: 91, 3: 102, 4: 112, 5: 124,
-             6: 138, 7: 151, 8: 168, 9: 185, 10: 204,
-             11: 226, 12: 249, 13: 274, 14: 304, 15: 335,
-             16: 369, 17: 408, 18: 450, 19: 497, 20: 548,
-             21: 606, 22: 667, 23: 737, 24: 814, 25: 898,
-             26: 990, 27: 1094, 28: 1207, 29: 1332, 30: 1470,
-             31: 1623, 32: 1791, 33: 1977, 34: 2182, 35: 2409,
-             36: 2658, 37: 2935, 38: 3240, 39: 3576, 40: 3947,
-             41: 4358, 42: 4810, 43: 5310, 44: 5863, 45: 6471,
-             46: 7144, 47: 7887, 48: 8707, 49: 9612, 50: 10612,
-             51: 11715, 52: 12934, 53: 14278, 54: 15764, 55: 17404,
-             56: 19214, 57: 21212, 58: 23420, 59: 25856, 60: 28546,
-             61: 31516, 62: 34795, 63: 38416, 64: 42413, 65: 46826,
-             66: 46826, 67: 57079, 68: 63019, 69: 69576, 70: 76818,
-             71: 84812, 72: 93638, 73: 103383, 74: 114143, 75: 126022,
-             76: 139138, 77: 153619, 78: 169608, 79: 187260, 80: 206750,
-             81: 228269, 82: 252027, 83: 278259, 84: 307221, 85: 339198,
-             86: 374502, 87: 413482, 88: 456519, 89: 504037, 90: 556499,
-             91: 614422, 92: 678376, 93: 748985, 94: 826944, 95: 913019,
-             96: 1008052, 97: 1112977, 98: 1228825, 99: 1356729, 100: 2147483647
-             }
+    0: 0, 1: 83, 2: 91, 3: 102, 4: 112, 5: 124,
+    6: 138, 7: 151, 8: 168, 9: 185, 10: 204,
+    11: 226, 12: 249, 13: 274, 14: 304, 15: 335,
+    16: 369, 17: 408, 18: 450, 19: 497, 20: 548,
+    21: 606, 22: 667, 23: 737, 24: 814, 25: 898,
+    26: 990, 27: 1094, 28: 1207, 29: 1332, 30: 1470,
+    31: 1623, 32: 1791, 33: 1977, 34: 2182, 35: 2409,
+    36: 2658, 37: 2935, 38: 3240, 39: 3576, 40: 3947,
+    41: 4358, 42: 4810, 43: 5310, 44: 5863, 45: 6471,
+    46: 7144, 47: 7887, 48: 8707, 49: 9612, 50: 10612,
+    51: 11715, 52: 12934, 53: 14278, 54: 15764, 55: 17404,
+    56: 19214, 57: 21212, 58: 23420, 59: 25856, 60: 28546,
+    61: 31516, 62: 34795, 63: 38416, 64: 42413, 65: 46826,
+    66: 46826, 67: 57079, 68: 63019, 69: 69576, 70: 76818,
+    71: 84812, 72: 93638, 73: 103383, 74: 114143, 75: 126022,
+    76: 139138, 77: 153619, 78: 169608, 79: 187260, 80: 206750,
+    81: 228269, 82: 252027, 83: 278259, 84: 307221, 85: 339198,
+    86: 374502, 87: 413482, 88: 456519, 89: 504037, 90: 556499,
+    91: 614422, 92: 678376, 93: 748985, 94: 826944, 95: 913019,
+    96: 1008052, 97: 1112977, 98: 1228825, 99: 1356729, 100: 2147483647
+}
 
 
 def _get_special_worlds():
@@ -104,6 +106,10 @@ MAPPING = {'Party': 0,
            'Aagi': 5,
            6: 6}
 
+MAPPING2 = {'b': 0,
+            'r': 1,
+            ' ': 2}
+
 
 def _json_keys_to_str(x):
     if isinstance(x, dict):
@@ -134,10 +140,17 @@ class Analyzer:
         for c in calls:
             parsed = parse_line(c)
             split = parsed.split()
-            if len(split) != 2:
+            if len(split) not in [3, 2]:
                 return
             world = split[0]
             call = split[1]
+            try:
+                population = split[2]
+            except IndexError:
+                population = ' '
+
+            if population not in ['b', 'r']:
+                population = ' '
 
             if not world.isdigit():
                 return
@@ -167,10 +180,9 @@ class Analyzer:
                     # extra time till rescout is 26 mins -4 min for each plinth
                     # for now this also includes 5/6 (this has 6 mins) if this gives a problem ill change it.
                     extra_time = (26 - flints_filled * 4) * 60
-                    self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time)
+                    self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time, population)
                     id = message.author.id
                     self.check_make_scout(id, message.author.name)
-                    # self.scouts[id]["stats"][str(flints_filled) + "/6 calls"] += 1
                     self.scouts[id]["scouts"] += 1
                     scout_level = get_scout_level(self.scouts[id]["scouts"])
                     if self.scouts[id]["scout_level"] != scout_level:
@@ -186,7 +198,7 @@ class Analyzer:
                     core = str(call)
                     core = get_core_name(core.lower())
                     extra_time = 26 * 60  # default time till rescout on a 0/6 world
-                    self.worlds[world] = (core, time.time(), time.time() + extra_time)
+                    self.worlds[world] = (core, time.time(), time.time() + extra_time, population)
                     id = message.author.id
                     self.check_make_scout(id, message.author.name)
                     self.scouts[id]["calls"] += 1
@@ -214,7 +226,7 @@ class Analyzer:
         active_list = [(k, v) for k, v in self.worlds.items() if self.is_ok(v[0], v[1])]
         next_list = [(k, v) for k, v in self.worlds.items() if
                      isinstance(v[0], int) and 7 > v[0] > 0]
-        next_list_s = sorted(next_list, key=lambda v: (-v[1][0], v[1][1]))
+        next_list_s = sorted(next_list, key=lambda v: (-v[1][0], MAPPING2[v[1][3]], v[1][1]))
         active_list_s = sorted(active_list, key=lambda v: (MAPPING[v[1][0]], -v[1][1]))
         n = max(len(next_list_s), len(active_list_s), 1)
         if trim:
@@ -238,7 +250,11 @@ class Analyzer:
             if i < len(next_list_s):
                 (world, value) = next_list_s[i]
                 age = str(math.floor((time.time() - value[1]) / 60))
-                s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m"
+                try:
+                    pop = value[3]
+                except IndexError:
+                    pop = 'r'
+                s = "w" + str(world) + "(" + str(value[0]) + "/6) " + age + "m " + pop
                 if world in _special_worlds:
                     if str(_special_worlds[world]).find("total") != -1:
                         s = "*" + s
@@ -348,10 +364,11 @@ class Analyzer:
         for world in self.scouts[id]["worlds"]:
             previous_call = self.worlds[world][0]
             previous_time = self.worlds[world][1]
+            previous_pop = self.worlds[world][3]
             print(previous_call, previous_time)
             if type(previous_call) is int:  # temporary depending on your fix.
                 extra_time = (26 - previous_call * 4) * 60
-            self.worlds[world] = (previous_call, previous_time, previous_time + extra_time)
+            self.worlds[world] = (previous_call, previous_time, previous_time + extra_time, previous_pop)
         self.scouts[id]["worlds"] = []
         await self.client.send_message(channel, f"{name} deleted their scout list.")
 
@@ -391,7 +408,7 @@ class Analyzer:
             for j in range(i, i + amount):
                 world = self.worlds[all_worlds[j]]
                 extra_time = 15 * 60
-                self.worlds[all_worlds[j]] = [world[0], world[1], time.time() + extra_time]
+                self.worlds[all_worlds[j]] = [world[0], world[1], time.time() + extra_time, world[3]]
             result = sorted(result)
             response = "error getting worlds"
             if len(result) == 1:
@@ -483,7 +500,7 @@ class Analyzer:
         await self.client.send_message(channel, message)
 
     async def reset(self):
-        self.worlds = {w: (0, 0, 0) for w in _all_worlds}
+        self.worlds = {w: (0, 0, 0, 'r') for w in _all_worlds}
         await self.savew()
 
     async def save(self):
@@ -528,7 +545,8 @@ class Analyzer:
                         int(item['plinths']) if self.representsint(item['plinths']) else
                         str(item['plinths']),
                         int(item['scout_time']),
-                        int(item['reassign_time'])
+                        int(item['reassign_time']),
+                        ' '
                     ]
             }
             dict1 = {**dict1, **dict2}
