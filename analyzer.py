@@ -122,6 +122,12 @@ def _json_keys_to_dict(x):
         return {str(k): v for k, v in x.items()}
     return x
 
+def population_weighter(argument):
+    switcher = { ' ' : 0.
+                 'r' : 1,
+                 'b' : 2
+               }
+    return switcher.get(argument, 0)
 
 class Analyzer:
     def __init__(self, client):
@@ -179,7 +185,7 @@ class Analyzer:
                     # rescout worlds with more cores faster to stay on top of what is next
                     # extra time till rescout is 26 mins -4 min for each plinth
                     # for now this also includes 5/6 (this has 6 mins) if this gives a problem ill change it.
-                    extra_time = (26 - flints_filled * 4) * 60
+                    extra_time = (31 - flints_filled * (4 + population_weighter(population)) * 60
                     self.worlds[world] = (flints_filled, time.time(), time.time() + extra_time, population)
                     id = message.author.id
                     self.check_make_scout(id, message.author.name)
